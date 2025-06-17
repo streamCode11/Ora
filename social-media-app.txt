@@ -1,0 +1,125 @@
+social-media-app/
+│
+├── backend/                      # Backend (Node.js/Express.js)
+│   ├── config/                    # Configuration files
+│   │   ├── db.js                  # Database connection
+│   │   └── cloudinary.js          # Cloudinary config for image uploads
+│   │
+│   ├── controllers/               # Route controllers
+│   │   ├── authController.js      # Authentication logic
+│   │   ├── postController.js      # Post-related logic
+│   │   ├── userController.js      # User profile logic
+│   │   └── commentController.js   # Comment logic
+│   │
+│   ├── middleware/                # Custom middleware
+│   │   ├── auth.js                # Authentication middleware
+│   │   ├── error.js               # Error handling middleware
+│   │   └── upload.js              # File upload middleware
+│   │
+│   ├── models/                    # MongoDB models
+│   │   ├── User.js                # User schema
+│   │   ├── Post.js                # Post schema
+│   │   ├── Comment.js             # Comment schema
+│   │   └── Notification.js        # Notification schema
+│   │
+│   ├── routes/                    # API routes
+│   │   ├── authRoutes.js          # Authentication routes
+│   │   ├── postRoutes.js          # Post routes
+│   │   ├── userRoutes.js          # User routes
+│   │   └── commentRoutes.js       # Comment routes
+│   │
+│   ├── utils/                     # Utility functions
+│   │   ├── apiFeatures.js         # API filtering, sorting, etc.
+│   │   ├── email.js               # Email sending functions
+│   │   └── helpers.js            # Helper functions
+│   │
+│   ├── .env                       # Environment variables
+│   ├── app.js                     # Main application file
+│   ├── server.js                  # Server entry point
+│   └── package.json               # Backend dependencies
+│
+├── frontend/                      # Frontend (React.js)
+│   ├── public/                    # Static files
+│   │   ├── index.html             # Main HTML file
+│   │   ├── favicon.ico            # Favicon
+│   │   └── robots.txt             # Robots file
+│   │
+│   ├── src/                       # React source files
+│   │   ├── assets/                # Static assets (images, fonts)
+│   │   │   └── images/            # Image files
+│   │   │
+│   │   ├── components/            # Reusable components
+│   │   │   ├── auth/              # Auth components
+│   │   │   │   ├── Login.jsx      # Login form
+│   │   │   │   └── Register.jsx   # Registration form
+│   │   │   │
+│   │   │   ├── common/            # Common components
+│   │   │   │   ├── Alert.jsx      # Alert/notification
+│   │   │   │   ├── Navbar.jsx     # Navigation bar
+│   │   │   │   └── Spinner.jsx    # Loading spinner
+│   │   │   │
+│   │   │   ├── posts/             # Post components
+│   │   │   │   ├── Post.jsx       # Single post
+│   │   │   │   ├── PostForm.jsx   # Post creation form
+│   │   │   │   └── Posts.jsx      # Posts list
+│   │   │   │
+│   │   │   ├── profile/           # Profile components
+│   │   │   │   ├── Profile.jsx    # User profile
+│   │   │   │   └── EditProfile.jsx # Profile edit form
+│   │   │   │
+│   │   │   └── ui/                # UI components
+│   │   │       ├── Button.jsx     # Custom button
+│   │   │       └── Card.jsx       # Card component
+│   │   │
+│   │   ├── context/               # React context
+│   │   │   ├── authContext.js     # Authentication context
+│   │   │   └── postContext.js     # Post context
+│   │   │
+│   │   ├── hooks/                 # Custom hooks
+│   │   │   ├── useAuth.js         # Auth hook
+│   │   │   └── useForm.js         # Form handling hook
+│   │   │
+│   │   ├── pages/                 # Page components
+│   │   │   ├── auth/              # Auth pages
+│   │   │   │   ├── LoginPage.jsx  # Login page
+│   │   │   │   └── RegisterPage.jsx # Register page
+│   │   │   │
+│   │   │   ├── dashboard/         # Dashboard pages
+│   │   │   │   ├── HomePage.jsx   # Home feed
+│   │   │   │   └── ExplorePage.jsx # Explore content
+│   │   │   │
+│   │   │   ├── profile/           # Profile pages
+│   │   │   │   ├── ProfilePage.jsx # Profile page
+│   │   │   │   └── EditProfilePage.jsx # Edit profile
+│   │   │   │
+│   │   │   └── 404.jsx            # 404 page
+│   │   │
+│   │   ├── redux/                 # Redux files (if using Redux)
+│   │   │   ├── actions/           # Redux actions
+│   │   │   ├── reducers/          # Redux reducers
+│   │   │   ├── store.js           # Redux store
+│   │   │   └── types.js           # Action types
+│   │   │
+│   │   ├── services/              # API services
+│   │   │   ├── authService.js     # Auth API calls
+│   │   │   └── postService.js     # Post API calls
+│   │   │
+│   │   ├── styles/                # Global styles
+│   │   │   ├── components/        # Component styles
+│   │   │   ├── pages/             # Page styles
+│   │   │   ├── _variables.scss    # SCSS variables
+│   │   │   └── index.scss         # Main styles
+│   │   │
+│   │   ├── utils/                 # Frontend utilities
+│   │   │   ├── constants.js       # App constants
+│   │   │   └── helpers.js         # Helper functions
+│   │   │
+│   │   ├── App.jsx                # Main App component
+│   │   ├── index.jsx              # React entry point
+│   │   └── setupTests.js          # Test setup
+│   │
+│   ├── .env                       # Frontend environment variables
+│   └── package.json               # Frontend dependencies
+│
+├── .gitignore                     # Git ignore file
+└── README.md                      # Project documentation
