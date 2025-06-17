@@ -7,14 +7,14 @@ import {
 
     from "../controllers/commentController.js";
 
-import { protect } from "../middleware/auth.js"; 
+// import { ProtectRoutes } from "../middleware/auth.js"; 
 
 const router = express.Router();
 
-router.post("/", protect, createComment);
+router.post("/" , createComment);
 
 router.get("/:postId", getCommentsByPost);
 
-router.delete("/:id", protect, deleteComment);
+router.delete("/:id", deleteComment);
 
 export default router;

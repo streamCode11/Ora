@@ -19,15 +19,11 @@ const userSchema = new Schema({
   email: {
     type: String,
     required: true,
-    unique: true,
-    match: [/.+\@.+\..+/, 'Please enter a valid email']  
+    unique: true
   },
   password: {
     type: String,
-    required: true,
-    minlength: 8,
-    maxlength: 20,
-    select: false,
+    required: true
   },
   role: {
     type: String,
@@ -44,8 +40,6 @@ const userSchema = new Schema({
   }
 }, { timestamps: true });  
 
-userSchema.methods.comparePassword = async function(candidatePassword) {
-     return await bcrypt.compare(candidatePassword, this.password);
-};
+
 const User = model('User', userSchema);
 export default User;
