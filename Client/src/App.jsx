@@ -1,13 +1,12 @@
-import Loader from './components/common/Loader'
-import Navbar from './components/common/Navbar'
-import Sidebar from './components/common/Sidebar'
+import { Route, Routes } from 'react-router-dom'
+import HomePage from './pages/dashboard/HomePage'
 import './styles/main.css'
+
 function App() {
   return(
-    <div className='bg-white'>
-    <Navbar/>
-    <Sidebar/>
-    </div>
+    <Routes>
+      <Route index element={<HomePage/>}/>
+    </Routes>
   )
 }
 

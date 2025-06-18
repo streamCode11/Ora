@@ -1,6 +1,5 @@
-
 import User from "../models/authSchema.js";
-import { JWT_EXPIRES , JWT_SECRET } from "../config/cloudinary.js";
+import { JWT_EXPIRES, JWT_SECRET } from "../config/cloudinary.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import validator from "email-validator";
@@ -8,20 +7,19 @@ import pwd from "password-validator";
 
 const PwdSchema = new pwd();
 
-PwdSchema 
-.is()
-.min(8)
-.is()
-.max(30)
-.has()
-.uppercase()
-.has()
-.lowercase()
-.has()
-.digits()
-.has()
-.not()
-.spaces();
+PwdSchema.is()
+  .min(8)
+  .is()
+  .max(30)
+  .has()
+  .uppercase()
+  .has()
+  .lowercase()
+  .has()
+  .digits()
+  .has()
+  .not()
+  .spaces();
 
 const PreSignup = async (req, res) => {
   try {
@@ -82,10 +80,12 @@ const PreSignup = async (req, res) => {
   }
 };
 
-
-const signup = async (req , res  ) => {
-  try{
-    const {username , email , password} = jwt.verify(req.body.token , JWT_SECRET);
+const signup = async (req, res) => {
+  try {
+    const { username, email, password } = jwt.verify(
+      req.body.token,
+      JWT_SECRET
+    );
     if (!email || !password || !username) {
       return res.status(400).json({
         message: "Please fill all the fields",
@@ -126,19 +126,19 @@ const signup = async (req , res  ) => {
     const user = new User({
       username,
       email,
-      password:hashedPass,
+      password: hashedPass,
     }).save();
     return res.json({
       message: "User created successfully",
-      ok:true,
-    })
-  }catch(err){
+      ok: true,
+    });
+  } catch (err) {
     return res.json({
       message: "An error occurred during signup",
-      ok:false
-    })
+      ok: false,
+    });
   }
-}
+};
 const login = async (req, res) => {
   try {
     const { emailOrUsername, password } = req.body;
@@ -151,7 +151,9 @@ const login = async (req, res) => {
     }
 
     const isEmail = validator.validate(emailOrUsername);
-    const query = isEmail ? { email: emailOrUsername } : { username: emailOrUsername };
+    const query = isEmail
+      ? { email: emailOrUsername }
+      : { username: emailOrUsername };
 
     const user = await User.findOne(query);
     if (!user) {
@@ -180,7 +182,7 @@ const login = async (req, res) => {
       username: user.username,
       email: user.email,
       createdAt: user.createdAt,
-      updatedAt: user.updatedAt
+      updatedAt: user.updatedAt,
     };
 
     return res.status(200).json({
@@ -197,4 +199,4 @@ const login = async (req, res) => {
     });
   }
 };
-export { PreSignup , signup , login };
+export { PreSignup, signup, login };
