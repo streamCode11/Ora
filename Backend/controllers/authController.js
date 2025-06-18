@@ -141,19 +141,19 @@ const signup = async (req, res) => {
 };
 const login = async (req, res) => {
   try {
-    const { emailOrUsername, password } = req.body;
+    const { email, username, password } = req.body;
 
-    if (!emailOrUsername || !password) {
+    if (!email|| !username || !password) {
       return res.status(400).json({
-        message: "Please provide email/username and password",
+        message: "Please provide all fields",
         ok: false,
       });
     }
 
-    const isEmail = validator.validate(emailOrUsername);
+    const isEmail = validator.validate(email);
     const query = isEmail
-      ? { email: emailOrUsername }
-      : { username: emailOrUsername };
+      ? { email: email }
+      : { username: username };
 
     const user = await User.findOne(query);
     if (!user) {
