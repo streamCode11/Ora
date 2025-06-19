@@ -12,7 +12,7 @@ const Sidebar = () => {
     { id: 3, name: "setting", to: "/setting" , icon:<FiSettings/> },
   ];
   return (
-    <div className="w-70 h-[calc(100vh-80px)] py-10 bg-white border-gray-200 border-r-2 px-5 flex flex-col gap-4 ">
+    <div className="w-66 h-[calc(100vh-80px)] py-10 bg-white border-gray-200 border-r-2 px-5 flex flex-col gap-4 ">
      {linkName.map((link , index) => (
       <Link key={index} className="flex items-center justify-left px-4 py-3 gap-5 transition-all hover:bg-midGray rounded-lg ">
         <span className="text-2xl text-grey">{link.icon}</span>
