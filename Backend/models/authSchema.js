@@ -6,7 +6,7 @@ const userSchema = new Schema({
     type: String,
     required: true,
     unique: true,
-    minlength: 5  // Fixed spelling
+    minlength: 5  
   },
   firstName: {
     type: String,
