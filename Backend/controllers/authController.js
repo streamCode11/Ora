@@ -1,10 +1,11 @@
 import User from "../models/authSchema.js";
-import { JWT_EXPIRES, JWT_SECRET } from "../config/cloudinary.js";
+import { JWT_EXPIRES, JWT_SECRET , CLIENT_URL } from "../config/cloudinary.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import validator from "email-validator";
 import pwd from "password-validator";
-
+import emailTemplate from "../helpers/emailTemplate.js";
+import { AWSSES } from "../config/awsses.js";
 const PwdSchema = new pwd();
 
 PwdSchema.is()
@@ -21,72 +22,95 @@ PwdSchema.is()
   .not()
   .spaces();
 
-const PreSignup = async (req, res) => {
-  try {
-    const { email, password, username } = req.body;
-
-    if (!email || !password || !username) {
-      return res.status(400).json({
-        message: "Please fill all the fields",
+  const PreSignup = async (req, res) => {
+    try {
+      const { email, password } = req.body;
+  
+      if (!email || !password ) {
+        return res.status(400).json({
+          message: "Please fill all the fields",
+          ok: false,
+        });
+      }
+  
+      if (!PwdSchema.validate(password)) {
+        return res.status(400).json({
+          message: "Invalid password format",
+          ok: false,
+        });
+      }
+  
+      if (!validator.validate(email)) {
+        return res.status(400).json({
+          message: "Invalid email format",
+          ok: false,
+        });
+      }
+  
+      const emailExist = await User.findOne({ email });
+      if (emailExist) {
+        return res.status(400).json({
+          message: "Email already exists",
+          ok: false,
+        });
+      }
+  
+      // const usernameExist = await User.findOne({ username });
+      // if (usernameExist) {
+      //   return res.status(400).json({
+      //     message: "Username already exists",
+      //     ok: false,
+      //   });
+      // }
+  
+      const token = jwt.sign({  email, password }, JWT_SECRET, {
+        expiresIn: JWT_EXPIRES,
+      });
+  
+      AWSSES.sendEmail(
+        emailTemplate(
+          email,
+          `Signup - Verification Link`,
+          `
+            <h2>Ora Register Page</h2>
+            <p>Please click on the link below to complete the signup process:</p>
+            <a href="${CLIENT_URL}/${token}">Create Account</a>
+          `
+        ),
+        (err, data) => {
+          if (err) {
+            // Send error response and return to prevent further execution
+            return res.status(500).json({
+              ok: false,
+              message: "Failed to send verification email",
+              error: err.message,
+            });
+          }
+  
+          // Send success response and return to prevent further execution
+          return res.status(200).json({
+            ok: true,
+            message:
+              "Please check your email to complete the signup process with almari.com",
+          });
+        }
+      );
+    } catch (err) {
+      return res.status(500).json({
+        message: "An error occurred during pre-signup",
+        error: err.message,
         ok: false,
       });
     }
-
-    if (!PwdSchema.validate(password)) {
-      return res.status(400).json({
-        message: "Invalid password format",
-        ok: false,
-      });
-    }
-
-    if (!validator.validate(email)) {
-      return res.status(400).json({
-        message: "Invalid email format",
-        ok: false,
-      });
-    }
-
-    const emailExist = await User.findOne({ email });
-    if (emailExist) {
-      return res.status(400).json({
-        message: "Email already exists",
-        ok: false,
-      });
-    }
-
-    const usernameExist = await User.findOne({ username });
-    if (usernameExist) {
-      return res.status(400).json({
-        message: "Username already exists",
-        ok: false,
-      });
-    }
-
-    const token = jwt.sign({ username, email, password }, JWT_SECRET, {
-      expiresIn: JWT_EXPIRES,
-    });
-
-    return res.status(200).json({
-      message: "Pre-signup successful",
-      token,
-      ok: true,
-    });
-  } catch (err) {
-    return res.status(500).json({
-      message: "An error occurred during pre-signup",
-      error: err.message,
-      ok: false,
-    });
-  }
-};
+  };
 
 const signup = async (req, res) => {
   try {
-    const { username, email, password } = jwt.verify(
+    const {  email, password } = jwt.verify(
       req.body.token,
       JWT_SECRET
     );
-    if (!email || !password || !username) {
+    if (!email || !password) {
       return res.status(400).json({
         message: "Please fill all the fields",
         ok: false,
@@ -114,22 +138,22 @@ const signup = async (req, res) => {
       });
     }
 
-    const usernameExist = await User.findOne({ username });
-    if (usernameExist) {
-      return res.status(400).json({
-        message: "Username already exists",
-        ok: false,
-      });
-    }
+    // const usernameExist = await User.findOne({ username });
+    // if (usernameExist) {
+    //   return res.status(400).json({
+    //     message: "Username already exists",
+    //     ok: false,
+    //   });
+    // }
     const salt = await bcrypt.genSalt(12);
     const hashedPass = await bcrypt.hash(password, salt);
     const user = new User({
-      username,
       email,
       password: hashedPass,
     }).save();
     return res.json({
       message: "User created successfully",
+      user,
       ok: true,
     });
   } catch (err) {
@@ -141,9 +165,9 @@ const signup = async (req, res) => {
 };
 const login = async (req, res) => {
   try {
-    const { email, username, password } = req.body;
+    const { email,  password } = req.body;
 
-    if (!email|| !username || !password) {
+    if (!email || !password) {
       return res.status(400).json({
         message: "Please provide all fields",
         ok: false,
@@ -151,11 +175,7 @@ const login = async (req, res) => {
     }
 
     const isEmail = validator.validate(email);
-    const query = isEmail
-      ? { email: email }
-      : { username: username };
-
-    const user = await User.findOne(query);
+    const user = await User.findOne({email});
     if (!user) {
       return res.status(401).json({
         message: "Invalid credentials - user not found",
