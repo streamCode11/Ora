@@ -1,0 +1,16 @@
+#1 Login details
+{
+    "username":"umar17865",
+    "firstName":"M Umar",
+    "lastName":"Imran",
+    "email":"umarimra1211@gmail.com",
+    "password":"Umar123!@#"
+}
+#2 Login details
+{
+    "username":"umar17845",
+    "firstName":"MUIB",
+    "lastName":"Co",
+    "email":"umarimra121113@gmail.com",
+    "password":"Umar123!@#"
+}

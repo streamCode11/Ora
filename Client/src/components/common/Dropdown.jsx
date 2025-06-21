@@ -1,35 +1,45 @@
-import { FiHome , FiCompass, FiSettings , FiX , FiUser } from "react-icons/fi";
+import { FiHome, FiCompass, FiSettings, FiX, FiUser } from "react-icons/fi";
 import { RiMessengerLine } from "react-icons/ri";
 import { Link } from "react-router-dom";
 
-const Dropdown = ({closeDrop}) => {
-     const linkName = [
-         { id: 0, name: "home", to: "/home"  , icon:<FiHome/>},
-         { id: 1, name: "Profile", to: "/profile"  , icon:<FiUser/>},
-         { id: 2, name: "explore", to: "/explore" , icon:<FiCompass/>},
-         { id: 3, name: "messages", to: "/message"  , icon:<RiMessengerLine/>},
-         { id: 4, name: "setting", to: "/setting" , icon:<FiSettings/> },
-       ];
+const Dropdown = ({ closeDrop }) => {
+  const menuItems = [
+    { id: 0, name: "Home", to: "/home", icon: <FiHome /> },
+    { id: 1, name: "Profile", to: "/profile", icon: <FiUser /> },
+    { id: 2, name: "Explore", to: "/explore", icon: <FiCompass /> },
+    { id: 3, name: "Messages", to: "/message", icon: <RiMessengerLine /> },
+    { id: 4, name: "Settings", to: "/setting", icon: <FiSettings /> },
+  ];
+
   return (
-    <div className='w-70 h-auto bg-white absolute top-21 right-7 py-2 px-3 flex-col flex gap-2 rounded-lg '>
-     <div className="text-2xl cursor-pointer text-grey" onClick={closeDrop} >
-          <FiX/>
-     </div>
-     <div className="flex flex-col  gap-1">
+    <div className="absolute top-16 right-3 w-56 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden animate-fadeIn">
+      <div className="flex justify-end p-2">
+        <button 
+          onClick={closeDrop}
+          className="p-1 rounded-full hover:bg-gray-100 transition-colors text-gray-500"
+          aria-label="Close menu"
+        >
+          <FiX className="text-xl" />
+        </button>
+      </div>
 
-      {
-          linkName.map((link, index) =>(
-          <Link to={link.to} >
-               <div className="flex items-center gap-3 h-15 hover:bg-body px-3 rounded-lg cursor-pointer transition-all " key={index}>
-                    <span className="text-2xl">{link.icon}</span>
-                    <span className="text-[16px] capitalize tracking-wide">{link.name}</span>
-               </div>
+      <nav className="pb-1">
+        {menuItems.map((item) => (
+          <Link
+            to={item.to}
+            key={item.id}
+            onClick={closeDrop}
+            className="block transition-colors hover:bg-gray-50 active:bg-gray-100"
+          >
+            <div className="flex items-center px-4 py-3 space-x-3">
+              <span className="text-gray-600 text-lg">{item.icon}</span>
+              <span className="text-gray-800 font-medium">{item.name}</span>
+            </div>
           </Link>
-          ))
-      }
-     </div>
+        ))}
+      </nav>
     </div>
-  )
-}
+  );
+};
 
-export default Dropdown
+export default Dropdown;

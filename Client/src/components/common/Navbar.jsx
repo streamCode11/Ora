@@ -1,55 +1,75 @@
 import React, { useState } from "react";
-import Logo from "../../assets/Ora bg.png";
-import { FiSearch, FiBell, FiPlus } from "react-icons/fi";
+import {
+  FiSearch,
+  FiHome,
+  FiFlag,
+  FiPlayCircle,
+  FiShoppingBag,
+  FiUsers,
+} from "react-icons/fi";
 import { RiMessengerLine } from "react-icons/ri";
-import ProfileImg from '../../assets/images/1.jpeg'
+import { IoMdNotificationsOutline } from "react-icons/io";
+import { CgMenuGridO } from "react-icons/cg";
+import Logo from "../../assets/Ora bg.png";
+import ProfileImg from "../../assets/images/1.jpeg";
 import Dropdown from "./Dropdown";
 import PostForm from "../posts/PostForm";
 
-const Navbar = () => { 
-  const [openPostForm , setOpenPostForm] = useState(false);
-  const [openDrop , setOpenDrop] = useState(false);
-  const handleOpenDrop = () => setOpenDrop(true);
-  const handleCloseDrop = () => setOpenDrop(false);
-  const handleOpenPostForm = () => setOpenPostForm(true);
-  const handleClosePostForm = () => setOpenPostForm(false);
+const Navbar = () => {
+  const [isPostFormOpen, setIsPostFormOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
   return (
-    <div className="bg-white h-20 w-full flex items-center justify-between px-10 ">
-      <div className="flex items-center justify-center gap-10">
-        <div className="h-17 w-auto">
-          <img src={Logo} alt="Logo" className="w-auto h-full" />
-        </div>
-        <div className="flex items-center gap-5 bg-white px-5 h-14 w-100 rounded-lg">
-          <FiSearch className="w-5  h-5 text-grey" />
-          <input
-            type="text"
-            placeholder="serach here"
-            className="outline-0 border-0"
-          />
+    <div className="fixed w-[calc(100vw-280px)] top-0 left-70 z-50 bg-white  border-b border-gray-200">
+      <div className=" mx-auto px-4">
+        <div className="flex justify-between h-19 items-center">
+          <div className="flex items-center space-x-2 min-w-[180px]">
+            <div className="hidden md:flex items-center bg-gray-100 rounded-full px-4 py-3 ml-2">
+              <FiSearch className="h-5 w-5 text-gray-500" />
+              <input
+                type="text"
+                className="ml-2 bg-transparent border-none focus:outline-none placeholder-gray-500 text-sm w-[250px]"
+                placeholder="Search People"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2 min-w-[180px] justify-end">
+            <button className="p-2 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 relative">
+              <RiMessengerLine size={20} />
+              <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-red-500"></span>
+            </button>
+
+            <button className="p-2 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 relative">
+              <IoMdNotificationsOutline size={22} />
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                3
+              </span>
+            </button>
+
+            <div className="relative ml-2">
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex rounded-full focus:outline-none"
+              >
+                <img
+                  className="h-8 w-8 rounded-full object-cover"
+                  src={ProfileImg}
+                  alt="User profile"
+                />
+              </button>
+              {isDropdownOpen && (
+                <Dropdown closeDrop={() => setIsDropdownOpen(false)} />
+              )}
+            </div>
+          </div>
         </div>
       </div>
-      <div className="flex items-center gap-20">
-        <div className="flex items-center gap-8 justify-center">
-          <div className="flex items-center justify-center cursor-pointer relative">
-            <FiBell className="text-2xl text-grey" />
-            <span className="absolute -top-3 left-3 bg-sky text-white flex items-center justify-center px-1 py-0.5 rounded-full text-sm">
-              01
-            </span>
-          </div>
-          <div className="flex items-center justify-center cursor-pointer relative after:absolute after:bottom-4 after:left-4 after:bg-sky after:h-2.5 after:w-2.5 after:rounded-full">
-            <RiMessengerLine className="text-2xl text-grey" />
-          </div>
-          <button className="flex items-center justify-between gap-1 rounded-4xl cursor-pointer px-5 py-2 bg-sky text-white" onClick={handleOpenPostForm}>
-            <FiPlus className="flex items-center justify-center text-2xl" />
-            <span className="text-lg capitalize ">create</span>
-          </button>
-          {openPostForm ? <PostForm closePostForm={handleClosePostForm }/> : null}
-        </div>
-        <div className="flex items-center justify-center h-15 w-15 cursor-pointer ">
-          <img src={ProfileImg} onClick={handleOpenDrop} alt="" className="w-ful h-full rounded-full "/>
-          {openDrop ? <Dropdown closeDrop={handleCloseDrop}/> :null}
-        </div>
-      </div>
+
+      {/* Post Form Modal */}
+      {isPostFormOpen && (
+        <PostForm closePostForm={() => setIsPostFormOpen(false)} />
+      )}
     </div>
   );
 };
