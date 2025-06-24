@@ -1,6 +1,6 @@
 import { sender_email } from "../config/awsses.js";
 
-const emailTemplate = (receiver_email, subject, body) => {
+const EmailTemplate = (receiver_email, subject, body) => {
   return {
     Source: sender_email,
     Destination: {
@@ -30,4 +30,4 @@ const emailTemplate = (receiver_email, subject, body) => {
   };
 };
 
-export default emailTemplate;
+export default EmailTemplate;

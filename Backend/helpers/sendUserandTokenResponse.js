@@ -1,7 +1,5 @@
-import {
-    JWT_SECRET
-} from '../config/cloudinary.js';
 import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../config/cloudinary.js';
 
 
 const responseTokenAndUser = (req, res, user) => {

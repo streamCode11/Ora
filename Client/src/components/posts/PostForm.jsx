@@ -8,7 +8,7 @@ import {
   FiImage,
   FiVideo,
   FiFile,
-  FiSmile
+  FiSmile,
 } from "react-icons/fi";
 import ReactCrop from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
@@ -25,7 +25,7 @@ const PostForm = ({ closePostForm }) => {
   const [postText, setPostText] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  
+
   const imgRef = useRef(null);
   const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
@@ -42,7 +42,7 @@ const PostForm = ({ closePostForm }) => {
         croppedUrl: null,
       };
     });
-    
+
     setMedia((prev) => [...prev, ...newMedia]);
     if (media.length === 0) setCurrentMediaIndex(0);
   };
@@ -167,13 +167,15 @@ const PostForm = ({ closePostForm }) => {
     const cursorPosition = textareaRef.current.selectionStart;
     const textBefore = postText.substring(0, cursorPosition);
     const textAfter = postText.substring(cursorPosition);
-    
+
     setPostText(`${textBefore}${emojiData.emoji}${textAfter}`);
-    
+
     setTimeout(() => {
       textareaRef.current.focus();
-      textareaRef.current.selectionStart = cursorPosition + emojiData.emoji.length;
-      textareaRef.current.selectionEnd = cursorPosition + emojiData.emoji.length;
+      textareaRef.current.selectionStart =
+        cursorPosition + emojiData.emoji.length;
+      textareaRef.current.selectionEnd =
+        cursorPosition + emojiData.emoji.length;
     }, 0);
   };
 
@@ -182,31 +184,26 @@ const PostForm = ({ closePostForm }) => {
     console.log({
       text: postText,
       media,
-      links
+      links,
     });
     closePostForm();
   };
 
   return (
-    <div className="fixed inset-0 bg-white-200 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50 ">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-gray-200 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50 ">
+      <div className="bg-gray rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         <div className="border-b border-gray-200 p-4 flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-gray-800">Create Post</h2>
+          <h2 className="text-xl font-semibold text-skin">Create Post</h2>
           <button
             onClick={closePostForm}
-            className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100"
+            className="text-skin hover:text-skin p-1 rounded-full hover:bg-midGray"
           >
             <FiX size={24} />
           </button>
         </div>
 
-        <div className="border-b border-gray-200 flex">
-          <button
-            className={`flex-1 py-3 font-medium  border-b-1 border-gray-200 text-gray-500`}
-            onClick={() => setActiveTab("post")}
-          >
-            Post
-          </button>
+        <div className=" text-center flex items-center">
+          <h1 className={`flex-1 py-3 font-medium   text-white`}>Post</h1>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">
@@ -215,31 +212,31 @@ const PostForm = ({ closePostForm }) => {
             value={postText}
             onChange={(e) => setPostText(e.target.value)}
             placeholder="What's on your mind?"
-            className="w-full border-0 outline-0 resize-none text-gray-800 placeholder-gray-400 min-h-[100px] text-lg"
+            className="w-full border-0 outline-0 resize-none text-white placeholder-white min-h-[100px] text-lg"
             rows="3"
           />
 
           {links.length > 0 && (
             <div className="mb-4">
-              <h3 className="text-sm font-medium text-gray-500 mb-2">Links</h3>
+              <h3 className="text-sm font-medium text-skin mb-2">Links</h3>
               <div className="space-y-2">
                 {links.map((link, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between bg-gray-50 p-3 rounded-lg"
+                    className="flex items-center justify-between bg-midGray p-3 rounded-lg"
                   >
                     <a
                       href={link.startsWith("http") ? link : `https://${link}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-500 truncate text-sm"
+                      className="text-skin truncate text-sm"
                     >
                       {link}
                     </a>
                     <button
                       type="button"
                       onClick={() => removeLink(index)}
-                      className="text-gray-400 hover:text-gray-600 ml-2"
+                      className="text-skin  ml-2"
                     >
                       <FiX size={16} />
                     </button>
@@ -251,8 +248,12 @@ const PostForm = ({ closePostForm }) => {
 
           {media.length > 0 && (
             <div className="mb-4 relative">
-              <div 
-                className={`relative w-full h-64 rounded-xl overflow-hidden ${isDragging ? "border-2 border-dashed border-blue-400 bg-blue-50" : "bg-gray-50"}`}
+              <div
+                className={`relative w-full h-64 rounded-xl overflow-hidden ${
+                  isDragging
+                    ? "border-2 border-dashed border-blue-400 bg-blue-50"
+                    : "bg-gray-50"
+                }`}
                 ref={dropAreaRef}
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}
@@ -264,20 +265,20 @@ const PostForm = ({ closePostForm }) => {
                     <button
                       type="button"
                       onClick={prevMedia}
-                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 p-2 rounded-full shadow-md z-10 hover:bg-opacity-100"
+                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-midGray text-skin bg-opacity-80 p-2 rounded-full shadow-md z-10 hover:bg-opacity-100"
                     >
                       <FiChevronLeft size={20} />
                     </button>
                     <button
                       type="button"
                       onClick={nextMedia}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 p-2 rounded-full shadow-md z-10 hover:bg-opacity-100"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-skin bg-midGray bg-opacity-80 p-2 rounded-full shadow-md z-10 hover:bg-opacity-100"
                     >
                       <FiChevronRight size={20} />
                     </button>
                   </>
                 )}
-                
+
                 {media[currentMediaIndex].type === "image" ? (
                   <img
                     src={
@@ -296,16 +297,16 @@ const PostForm = ({ closePostForm }) => {
                     </div>
                   </div>
                 )}
-                
+
                 <button
                   type="button"
                   onClick={() => removeMedia(currentMediaIndex)}
-                  className="absolute top-2 right-2 bg-white bg-opacity-80 p-1 rounded-full shadow-md hover:bg-opacity-100"
+                  className="absolute top-2 right-2 bg-midGray bg-opacity-80 p-1 rounded-full shadow-md hover:bg-opacity-100"
                 >
-                  <FiX size={16} className="text-gray-700" />
+                  <FiX size={16} className="text-skin" />
                 </button>
               </div>
-              
+
               {media.length > 1 && (
                 <div className="flex justify-center mt-2 space-x-2">
                   {media.map((_, index) => (
@@ -313,7 +314,7 @@ const PostForm = ({ closePostForm }) => {
                       key={index}
                       onClick={() => setCurrentMediaIndex(index)}
                       className={`w-2 h-2 rounded-full ${
-                        index === currentMediaIndex ? "bg-blue-500" : "bg-gray-300"
+                        index === currentMediaIndex ? "bg-skin" : "bg-midGray"
                       }`}
                     />
                   ))}
@@ -330,13 +331,13 @@ const PostForm = ({ closePostForm }) => {
                 value={currentLink}
                 onChange={(e) => setCurrentLink(e.target.value)}
                 placeholder="Paste a link..."
-                className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="flex-1 p-2  rounded-lg text-skin bg-midGray placeholder-white  outline-none border-none "
                 autoFocus
               />
               <button
                 type="button"
                 onClick={handleLinkSubmit}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                className="bg-midGray text-white px-4 py-2 rounded-lg hover:bg-midGray"
               >
                 Add
               </button>
@@ -345,7 +346,7 @@ const PostForm = ({ closePostForm }) => {
 
           {currentCropIndex !== null && (
             <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-              <div className="bg-white rounded-xl p-4 max-w-4xl w-full max-h-[90vh] overflow-auto">
+              <div className="bg-gray rounded-xl p-4 max-w-4xl w-full max-h-[90vh] overflow-auto">
                 <div className="relative">
                   <ReactCrop
                     crop={crop}
@@ -367,14 +368,14 @@ const PostForm = ({ closePostForm }) => {
                   <button
                     type="button"
                     onClick={() => setCurrentCropIndex(null)}
-                    className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300"
+                    className="bg-midGray text-skin px-4 py-2 rounded-lg hover:bg-gray"
                   >
                     Cancel
                   </button>
                   <button
                     type="button"
                     onClick={applyCrop}
-                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                    className="bg-midGray text-skin px-4 py-2 rounded-lg hover:bg-gray"
                   >
                     Apply
                   </button>
@@ -385,7 +386,7 @@ const PostForm = ({ closePostForm }) => {
 
           {showEmojiPicker && (
             <div className="absolute bottom-16 right-20 z-10">
-              <EmojiPicker 
+              <EmojiPicker
                 onEmojiClick={onEmojiClick}
                 width={300}
                 height={400}
@@ -400,7 +401,7 @@ const PostForm = ({ closePostForm }) => {
               <button
                 type="button"
                 onClick={() => fileInputRef.current.click()}
-                className="p-2 text-gray-500 hover:text-blue-500 hover:bg-blue-50 rounded-full"
+                className="p-2 text-skin hover:text-skin hover:bg-midGray rounded-full"
                 title="Add photos/videos"
               >
                 <FiImage size={20} />
@@ -417,7 +418,11 @@ const PostForm = ({ closePostForm }) => {
               <button
                 type="button"
                 onClick={() => setShowLinkInput(!showLinkInput)}
-                className={`p-2 rounded-full ${showLinkInput ? "text-blue-500 bg-blue-50" : "text-gray-500 hover:text-blue-500 hover:bg-blue-50"}`}
+                className={`p-2 rounded-full ${
+                  showLinkInput
+                    ? "text-skin bg-midGray"
+                    : "text-skin hover:text-skin hover:bg-midGray"
+                }`}
                 title="Add link"
               >
                 <FiLink size={20} />
@@ -426,7 +431,7 @@ const PostForm = ({ closePostForm }) => {
               <button
                 type="button"
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                className="p-2 text-gray-500 hover:text-blue-500 hover:bg-blue-50 rounded-full"
+                className="p-2 text-skin hover:text-skin hover:bg-midGray rounded-full"
                 title="Add emoji"
               >
                 <FiSmile size={20} />
@@ -437,7 +442,11 @@ const PostForm = ({ closePostForm }) => {
               type="submit"
               onClick={handleSubmit}
               disabled={!postText && media.length === 0 && links.length === 0}
-              className={`px-6 py-2 rounded-lg font-medium ${!postText && media.length === 0 && links.length === 0 ? "bg-gray-200 text-gray-500 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"}`}
+              className={`px-6 py-2 rounded-lg font-medium ${
+                !postText && media.length === 0 && links.length === 0
+                  ? "text-skin hover:text-skin hover:bg-midGray cursor-not-allowed"
+                  : "bg-midGray text-white hover:bg-midGray"
+              }`}
             >
               Post
             </button>

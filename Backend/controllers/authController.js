@@ -1,13 +1,17 @@
-import User from "../models/authSchema.js";
-import { JWT_EXPIRES, JWT_SECRET } from "../config/cloudinary.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import validator from "email-validator";
+import { JWT_SECRET , CLIENT_URL } from "../config/cloudinary.js";
 import pwd from "password-validator";
+import { AWSSES } from "../config/awsses.js";
+import User from "../models/authSchema.js";
+import responseTokenAndUser from "../helpers/sendUserandTokenResponse.js";
+import EmailTemplate from "../helpers/emailTemplate.js";
 
-const PwdSchema = new pwd();
+const pschema = new pwd();
 
-PwdSchema.is()
+pschema
+  .is()
   .min(8)
   .is()
   .max(30)
@@ -21,146 +25,223 @@ PwdSchema.is()
   .not()
   .spaces();
 
-const signup = async (req, res) => {
+const preSignup = async (req, res) => {
   try {
-    const { email, password, firstName, lastName, username } = req.body;
-
-    if (!email || !password || !firstName || !lastName || !username) {
-      return res.status(400).json({
-        message: "Please fill all the fields",
+    const { email, password, username } = req.body;
+    if (!email || !password || !username) {
+      return res.json({
         ok: false,
+        error: "Please provide both fields",
       });
     }
 
-    if (!PwdSchema.validate(password)) {
-      return res.status(400).json({
-        message: "Invalid password format",
+    if (!pschema.validate(password)) {
+      return res.json({
         ok: false,
+        error: "Password is invalid",
       });
     }
 
     if (!validator.validate(email)) {
-      return res.status(400).json({
-        message: "Invalid email format",
+      return res.json({
         ok: false,
+        error: "Email is invalid",
       });
     }
 
     const emailExist = await User.findOne({ email });
+
     if (emailExist) {
-      return res.status(400).json({
-        message: "Email already exists",
+      return res.json({
         ok: false,
+        error: "Email is already taken please try with unique email",
+      });
+    }
+    const usernameExist = await User.findOne({ username });
+
+    if (usernameExist) {
+      return res.json({
+        ok: false,
+        error: "username is already taken please try with unique username",
       });
     }
 
-    const usernameExist = await User.findOne({ username });
-    if (usernameExist) {
-      return res.status(400).json({
-        message: "Username already exists",
+    const token = jwt.sign({ email, password, username }, JWT_SECRET, {
+      expiresIn: "6h",
+    });
+
+    AWSSES.sendEmail(
+      EmailTemplate(
+        email,
+        ` Signup - Verification Link `,
+        `
+                <h2>  Ora Register Page   </h2>
+                <p>Please click on below link to complete the  
+                signup process </p>
+
+                <a href="${CLIENT_URL}/${token}"> Create Account   </a>
+
+             
+             `
+      ),
+      (err, data) => {
+        if (err) {
+          res.json({
+            ok: false,
+            error: err.message,
+          });
+        }
+        if (data) {
+          res.json({
+            ok: true,
+            data,
+            message:
+              "Please check your email address for complete the signup process with Ora.com",
+          });
+        }
+      }
+    );
+  } catch (err) {
+    return res.json({
+      ok: false,
+      error: err.message,
+    });
+  }
+};
+
+const signup = async (req, res) => {
+  try {
+    if(!req.body.token){
+      return res.json({
         ok: false,
+        error: "Please provide token in request body",
+      });
+    }
+    const token = req.body.token;
+    const { email, password, username } = jwt.verify(
+      token,
+      JWT_SECRET
+    );
+
+    if (!email || !password || !username) {
+      return res.json({
+        ok: false,
+        error: "Please provide both fields",
+      });
+    }
+
+    if (!pschema.validate(password)) {
+      return res.json({
+        ok: false,
+        error: "Password is invalid",
+      });
+    }
+
+    if (!validator.validate(email)) {
+      return res.json({
+        ok: false,
+        error: "Email is invalid",
+      });
+    }
+
+    const emailExist = await User.findOne({ email });
+
+    if (emailExist) {
+      return res.json({
+        ok: false,
+        error: "Email is already taken please try with unique email",
+      });
+    }
+    const usernameExist = await User.findOne({ username });
+
+    if (usernameExist) {
+      return res.json({
+        ok: false,
+        error: "username is already taken please try with unique username",
       });
     }
 
     const salt = await bcrypt.genSalt(12);
-    const hashedPass = await bcrypt.hash(password, salt);
-    
-    const user = await new User({
-      username,
-      firstName,
-      lastName,
+    const hashedpassword = await bcrypt.hash(password, salt);
+
+    const newUser = await new User({
       email,
-      password: hashedPass,
+      password: hashedpassword,
+      username: username,
     }).save();
-    
-    const token = jwt.sign(
-      { id: user._id, email: user.email, username: user.username },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES }
-    );
+    console.log(newUser);
 
-    const userData = {
-      _id: user._id,
-      username: user.username,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
-
-    return res.status(201).json({
-      message: "User created successfully",
-      token,
-      user: userData,
+    console.log("your account has been created.");
+    return res.json({
       ok: true,
+      message: "your account has been created.",
     });
   } catch (err) {
-    return res.status(500).json({
-      message: "An error occurred during signup",
-      error: err.message,
+    return res.json({
       ok: false,
+      error: err.message,
     });
   }
 };
 
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({
-        message: "Please provide all fields",
+    if ((!email && !username) || !password) {
+      return res.json({
         ok: false,
+        error: "Please provide both fields",
       });
     }
 
-    const isEmail = validator.validate(email);
+    if (!pschema.validate(password)) {
+      return res.json({
+        ok: false,
+        error: "Password is invalid",
+      });
+    }
+
+    if (!validator.validate(email)) {
+      return res.json({
+        ok: false,
+        error: "Email is invalid",
+      });
+    }
+
     const user = await User.findOne({ email });
+
     if (!user) {
-      return res.status(401).json({
-        message: "Invalid credentials - user not found",
+      return res.json({
         ok: false,
+        error: "User not found with this email",
       });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({
-        message: "Invalid credentials - wrong password",
+    const FindUsername = await User.findOne({ username });
+    if (!FindUsername) {
+      return res.json({
         ok: false,
+        error: "user is not found with this username",
       });
     }
 
-    const token = jwt.sign(
-      { id: user._id, email: user.email, username: user.username },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES }
-    );
+    const isPasswordMatched = await bcrypt.compare(password, user.password);
 
-    const userData = {
-      _id: user._id,
-      username: user.username,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
+    if (!isPasswordMatched) {
+      return res.json({
+        ok: false,
+        error: "Password is in-correct",
+      });
+    }
 
-    return res.status(200).json({
-      message: "Login successful",
-      token,
-      user: userData,
-      ok: true,
-    });
+    responseTokenAndUser(req, res, user);
   } catch (err) {
-    return res.status(500).json({
-      message: "An error occurred during login",
-      error: err.message,
+    res.json({
       ok: false,
+      error: err.message,
     });
   }
 };
 
-export { signup, login };
+export { preSignup, signup, login };

@@ -12,11 +12,11 @@ const Dropdown = ({ closeDrop }) => {
   ];
 
   return (
-    <div className="absolute top-16 right-3 w-56 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden animate-fadeIn">
+    <div className="absolute top-16 right-3 w-56 bg-gray rounded-lg shadow-xl  overflow-hidden animate-fadeIn">
       <div className="flex justify-end p-2">
         <button 
           onClick={closeDrop}
-          className="p-1 rounded-full hover:bg-gray-100 transition-colors text-gray-500"
+          className="p-1 rounded-full hover:bg-midGray transition-colors text-skin"
           aria-label="Close menu"
         >
           <FiX className="text-xl" />
@@ -29,11 +29,11 @@ const Dropdown = ({ closeDrop }) => {
             to={item.to}
             key={item.id}
             onClick={closeDrop}
-            className="block transition-colors hover:bg-gray-50 active:bg-gray-100"
+            className="block transition-colors text-white hover:bg-midGray active:bg-gray-100"
           >
             <div className="flex items-center px-4 py-3 space-x-3">
-              <span className="text-gray-600 text-lg">{item.icon}</span>
-              <span className="text-gray-800 font-medium">{item.name}</span>
+              <span className=" text-lg">{item.icon}</span>
+              <span className=" font-medium">{item.name}</span>
             </div>
           </Link>
         ))}

@@ -1,10 +1,10 @@
 import SES from "aws-sdk/clients/ses.js"
-const AWS_ACCESS_KEY_ID = "AKIATXEYQD4M6VLHIZ7V";
-const AWS_SECRET_ACCES_KEY = "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";
+const AWS_ACCESS_KEY_ID = "AKIARXBTA5YVHPLH76HY";
+const AWS_SECRET_ACCES_KEY = "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";
 const AWS_REGION = "us-east-1";
 const AWS_VERSION = "2010-12-01";
 
-export const sender_email = "Ora.com <hammadshahzad13@gmail.com>";
+export const sender_email = "Ora.com <mshahzad19333@gmail.com>";
 
 const AWSconfig = {
   accessKeyId: AWS_ACCESS_KEY_ID,
