@@ -21,14 +21,6 @@ const postSchema = new Schema(
       maxlength: 2200,
       default: "",
     },
-    location: {
-      placeId: String,
-      name: String,
-      coordinates: {
-        type: { type: String, default: "Point" },
-        coordinates: [Number],
-      },
-    },
     settings: {
       hideLikeCount: { type: Boolean, default: false },
       disableComments: { type: Boolean, default: false },
@@ -36,7 +28,6 @@ const postSchema = new Schema(
     likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
     savedBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    shares: { type: Number, default: 0 },
     viewCount: { type: Number, default: 0 },
     isArchived: { type: Boolean, default: false },
   },

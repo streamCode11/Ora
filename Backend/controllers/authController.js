@@ -186,9 +186,9 @@ const signup = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const {  email, password } = req.body;
 
-    if ((!email && !username) || !password) {
+    if (!email  || !password) {
       return res.json({
         ok: false,
         error: "Please provide both fields",
@@ -209,24 +209,17 @@ const login = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email });
+    const EmailName = await User.findOne({ email });
 
-    if (!user) {
+    if (!EmailName) {
       return res.json({
         ok: false,
         error: "User not found with this email",
       });
     }
 
-    const FindUsername = await User.findOne({ username });
-    if (!FindUsername) {
-      return res.json({
-        ok: false,
-        error: "user is not found with this username",
-      });
-    }
 
-    const isPasswordMatched = await bcrypt.compare(password, user.password);
+    const isPasswordMatched = await bcrypt.compare(password, EmailName.password);
 
     if (!isPasswordMatched) {
       return res.json({
@@ -235,7 +228,7 @@ const login = async (req, res) => {
       });
     }
 
-    responseTokenAndUser(req, res, user);
+    responseTokenAndUser(req, res, EmailName);
   } catch (err) {
     res.json({
       ok: false,

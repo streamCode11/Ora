@@ -5,6 +5,7 @@ import {
   FiSettings,
   FiLogOut,
   FiPlus,
+  FiBookmark
 } from "react-icons/fi";
 import { RiMessengerLine } from "react-icons/ri";
 import { Link } from "react-router-dom";
@@ -36,6 +37,12 @@ const Sidebar = () => {
     },
     {
       id: 3,
+      name: "saved",
+      to: "/saved",
+      icon: <FiBookmark className="text-xl" />,
+    },
+    {
+      id: 4,
       name: "Settings",
       to: "/setting",
       icon: <FiSettings className="text-xl" />,
@@ -43,13 +50,10 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="  h-screen w-70  flex flex-col justify-between py-6 bg-gray  shadow-sm">
+    <div className="  h-screen w-70  flex flex-col justify-between py-3 bg-gray  shadow-sm">
       <div className="flex flex-col px-4 space-y-1">
-        {/* <div className="h-17 w-auto">
+        <div className="h-19 w-auto">
           <img src={webLogo} className="h-full w-auto" alt="" />
-        </div> */}
-        <div className="">
-          <h1 className=" text-6xl font-medium text-skin ">Ora</h1>
         </div>
         {navLinks.map((link) => (
           <Link
@@ -92,7 +96,7 @@ const Sidebar = () => {
           </Link>
 
           <Link
-            to="/logout"
+            to="/register"
             className="flex items-center px-3 py-2 gap-3 rounded-lg
                       text-white hover:bg-skin  hover:text-slate-700 transition-colors mt-1"
           >

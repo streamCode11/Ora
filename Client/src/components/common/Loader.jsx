@@ -1,6 +1,6 @@
 import React from 'react'
 import '../../styles/components/Loader.css'
-const Loader = () => {
+const LoaderCom = () => {
   return (
     <div className='loader-container'>
       <div className="loader"></div>
@@ -8,4 +8,4 @@ const Loader = () => {
   )
 }
 
-export default Loader
+export default LoaderCom

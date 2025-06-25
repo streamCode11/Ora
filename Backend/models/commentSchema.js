@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
+import mongoose, {model , Schema}  from "mongoose";
 
-const commentSchema = new mongoose.Schema(
+const commentSchema = new Schema(
   {
     postId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -23,6 +23,6 @@ const commentSchema = new mongoose.Schema(
   }
 );
 
-const Comment = mongoose.model("Comment", commentSchema);
+const Comment = model("Comment", commentSchema);
 
 export default Comment;
