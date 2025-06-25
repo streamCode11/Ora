@@ -279,7 +279,6 @@ const PostForm = ({ closePostForm }) => {
                   </>
                 )}
 
-                {media[currentMediaIndex].type === "image" ? (
                   <img
                     src={
                       media[currentMediaIndex]?.croppedUrl ||
@@ -289,15 +288,7 @@ const PostForm = ({ closePostForm }) => {
                     className="w-full h-full object-contain cursor-pointer"
                     onClick={() => handleMediaClick(currentMediaIndex)}
                   />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <div className="text-center">
-                      <FiVideo size={48} className="mx-auto text-gray-400" />
-                      <p className="mt-2 text-gray-500">Video preview</p>
-                    </div>
-                  </div>
-                )}
-
+              
                 <button
                   type="button"
                   onClick={() => removeMedia(currentMediaIndex)}
@@ -410,7 +401,7 @@ const PostForm = ({ closePostForm }) => {
                   ref={fileInputRef}
                   className="hidden"
                   onChange={handleFileChange}
-                  accept="image/*,video/*"
+                  accept="image/*"
                   multiple
                 />
               </button>

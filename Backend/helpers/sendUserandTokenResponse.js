@@ -23,7 +23,8 @@ const responseTokenAndUser = (req, res, user) => {
             ok: true,
             token,
             refreshToken,
-            user
+            user,
+            message: 'Login successful'
         })
 
     } catch (err) {}
