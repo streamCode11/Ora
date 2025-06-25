@@ -11,11 +11,9 @@ const postSchema = new Schema(
     media: [
       {
         url: { type: String, required: true },
-        type: { type: String, enum: ["image", "video"], required: true },
+        type: { type: String, enum: ["image"], required: true },
         width: Number,
         height: Number,
-        duration: Number,
-        thumbnail: String,
       },
     ],
     caption: {
@@ -23,13 +21,6 @@ const postSchema = new Schema(
       maxlength: 2200,
       default: "",
     },
-    mentions: [
-      {
-        user: { type: Schema.Types.ObjectId, ref: "User" },
-        position: { x: Number, y: Number },
-      },
-    ],
-    hashtags: [String],
     location: {
       placeId: String,
       name: String,

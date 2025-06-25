@@ -3,14 +3,10 @@ const postFormSchema = {
        {
          name: 'media',
          type: 'file',
-         accept: 'image/*, video/*',
+         accept: 'image/*',
          multiple: false,
          maxSize: 50 * 1024 * 1024,
          required: true,
-         validation: {
-           validate: (files) => files.length > 0,
-           message: 'Please select at least one file'
-         }
        },
        {
          name: 'caption',
@@ -19,13 +15,6 @@ const postFormSchema = {
          placeholder: 'Write a caption...',
          optional: true,
          emojiPicker: true
-       },
-       {
-         name: 'tagPeople',
-         type: 'user-tag',
-         placeholder: 'Tag people',
-         optional: true,
-         maxTags: 20
        },
        {
          name: 'advancedSettings',
