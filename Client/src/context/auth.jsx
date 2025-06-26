@@ -12,6 +12,8 @@ const AuthProvider = ({ children }) => {
     setAuth(JSON.parse(authUser));
   }, []);
 
+  
+
      return (
      <AuthContext.Provider value={[auth, setAuth]}>
           {children}

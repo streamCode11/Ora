@@ -6,19 +6,15 @@ import {
   deletePost,
   likePost
 } from "../controllers/postController.js";
+import { protect, admin } from "../middleware/auth.js";
 
-import { protect } from "../middleware/auth.js";
+const PostRoutes = express.Router();
 
-const router = express.Router();
+PostRoutes.get("/user/:userId", getAllPosts);
+PostRoutes.get("/user/:id", getPostById);
+PostRoutes.post("/user/", protect, createPost);
+PostRoutes.put("/user/:id/like", protect, likePost);
+PostRoutes.delete("/user/:id", protect, deletePost);
+PostRoutes.get("/user/:userId", protect, admin, getPostsByUser);
 
- router.post("/", protect, createPost);
-
-router.get("/", getAllPosts);
-
-router.get("/:id", getPostById);
-
-router.delete("/:id", protect, deletePost);
-
-router.put("/:id/like", protect, likePost);
-
-export default router;
+export default PostRoutes;

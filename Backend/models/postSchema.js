@@ -11,7 +11,7 @@ const postSchema = new Schema(
       {
         url: { type: String, required: true },
         type: { type: String, enum: ["image"], required: true },
-        required: true,
+        // required: true,
         width: Number,
         height: Number,
       },
