@@ -13,7 +13,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [auth, setAuth] = useAuth(); // Now this will work properly
+  const [auth, setAuth] = useAuth(); 
   const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
@@ -36,7 +36,7 @@ const LoginPage = () => {
         setError(response.data.error);
         alert(response.data.error);
       } else {
-        // Store auth data
+
         localStorage.setItem('auth', JSON.stringify(response.data));
         setAuth(response.data);
         

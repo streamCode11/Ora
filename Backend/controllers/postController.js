@@ -14,7 +14,7 @@ const createPost = async (req, res) => {
     const post = await Post.create({
       user: userId,
       content,
-      image
+      image,
     });
 
     res.status(201).json({ success: true, data: post });
@@ -22,7 +22,6 @@ const createPost = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-
 
 const getAllPosts = async (_req, res) => {
   try {
@@ -35,7 +34,6 @@ const getAllPosts = async (_req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-
 
 const getPostById = async (req, res) => {
   try {
@@ -56,7 +54,6 @@ const getPostById = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-
 
 const deletePost = async (req, res) => {
   try {
@@ -82,7 +79,6 @@ const deletePost = async (req, res) => {
   }
 };
 
-
 const likePost = async (req, res) => {
   try {
     const { id } = req.params;
@@ -99,10 +95,8 @@ const likePost = async (req, res) => {
     const alreadyLiked = post.likes.includes(userId);
 
     if (alreadyLiked) {
-
       post.likes.pull(userId);
     } else {
-
       post.likes.push(userId);
     }
 
@@ -111,7 +105,7 @@ const likePost = async (req, res) => {
     res.status(200).json({
       success: true,
       liked: !alreadyLiked,
-      totalLikes: post.likes.length
+      totalLikes: post.likes.length,
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
