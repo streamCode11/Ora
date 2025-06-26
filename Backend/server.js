@@ -11,6 +11,6 @@ app.use(cors());
 app.use('/api/comments', commentRoutes);
 app.use(`${pre}/posts`, PostRoutes);
 app.use(`${pre}/auth` , authRouter);
-app.listen(PORT , () => {
-     console.log("app is run on port " + PORT);
+app.listen(PORT , (req , res) => {
+     res.send("app is run on port " + PORT);
 });
