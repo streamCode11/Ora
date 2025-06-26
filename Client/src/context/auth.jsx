@@ -12,13 +12,11 @@ const AuthProvider = ({ children }) => {
     setAuth(JSON.parse(authUser));
   }, []);
 
-  
-
-     return (
-     <AuthContext.Provider value={[auth, setAuth]}>
-          {children}
-     </AuthContext.Provider>
-     );
+  return (
+    <AuthContext.Provider value={[auth, setAuth]}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 const useAuth = () => useContext(AuthContext);

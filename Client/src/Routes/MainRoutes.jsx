@@ -3,7 +3,7 @@ import { Route, Routes } from 'react-router-dom'
 import HomePage from '../pages/dashboard/HomePage'
 import MainPage from '../pages/MainPage'
 import LoginPage from '../pages/auth/LoginPage'
-import Profile from '../components/profile/Profile'
+import ProfilePage from '../pages/profile/ProfilePage'
 import Register from '../pages/auth/RegisterPage'
 import ActivateAccount from '../pages/auth/ActivateAcc'
 
@@ -17,7 +17,7 @@ const MainRoutes = () => {
         <Route path="/" element={<MainPage/>}>
           <Route index element={<HomePage/>}/>
           <Route path='/home' element={<HomePage/>}/>
-          <Route path="profile" element={<Profile/>}/>
+          <Route path="profile" element={<ProfilePage/>}/>
         </Route>
       </Routes>
   )

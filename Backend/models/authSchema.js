@@ -25,6 +25,10 @@ const userSchema = new Schema({
     type: String,
     required: true
   },
+  bio: {
+    type: String,
+    default: "Hey there! I am using Ora"
+  },
   role: {
     type: String,
     enum: ["admin", "user"],
@@ -32,7 +36,6 @@ const userSchema = new Schema({
   },
   profileImg: {
     type: String,
-    default: 'default.jpg'  
   },
   date: {
     type: Date,

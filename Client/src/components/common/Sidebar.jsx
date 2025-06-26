@@ -12,6 +12,33 @@ import { Link } from "react-router-dom";
 import webLogo from "../../assets/Ora bg.png";
 import profileImg from "../../assets/images/1.jpeg";
 import PostForm from "../posts/PostForm";
+import Apis from "../../config/apis";
+import axios from "axios";
+import { useAuth } from "../../context/auth";
+
+const Logout = async () => {
+  try {
+    const response = await axios.post(
+      `${Apis.auth}/logout`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("auth")}`,
+        },
+      }
+    );
+    if (response.data.ok) {
+      localStorage.removeItem("auth");
+      window.location.href = "/login";
+    } else {
+      console.error(response.data.error);
+    }
+  } catch (error) {
+    console.error("Logout failed:", error);
+  }
+};
+
+
 
 const Sidebar = () => {
   const [openPostForm, setOpenPostForm] = useState(false);
@@ -82,7 +109,7 @@ const Sidebar = () => {
       <div className="px-4 pb-4">
         <div className=" pt-2">
           <Link
-            to="/login"
+            to=""
             className="flex items-center gap-3 text-gray-100 px-3 py-2 rounded-lg hover:bg-skin hover:text-slate-700  transition-all"
           >
             <img
@@ -96,7 +123,7 @@ const Sidebar = () => {
           </Link>
 
           <Link
-            to="/register"
+            onClick={Logout}
             className="flex items-center px-3 py-2 gap-3 rounded-lg
                       text-white hover:bg-skin  hover:text-slate-700 transition-colors mt-1"
           >

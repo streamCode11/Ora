@@ -201,26 +201,20 @@ const login = async (req, res) => {
         error: "Password is invalid",
       });
     }
-
     if (!validator.validate(email)) {
       return res.json({
         ok: false,
         error: "Email is invalid",
       });
     }
-
     const EmailName = await User.findOne({ email });
-
     if (!EmailName) {
       return res.json({
         ok: false,
         error: "User not found with this email",
       });
     }
-
-
     const isPasswordMatched = await bcrypt.compare(password, EmailName.password);
-
     if (!isPasswordMatched) {
       return res.json({
         ok: false,
@@ -236,5 +230,30 @@ const login = async (req, res) => {
     });
   }
 };
+// Logout function to invalidate the token
+let blacklistToken = [];
+const Logout = async (req, res) => {
+  let token = req.headers.authorization.split(" ")[1];
+  try{
+    if (!token) {
+      return res.json({
+        ok: false,
+        error: "Please provide token in request header",
+      });
+    }
+    blacklistToken.push(token);
+    return res.json({
+      ok: true,
+      message: "You have been logged out successfully",
+    });
+  }catch(err){
+    return res.json({
+      ok: false,
+      error: err.message,
+    })
+  }
+}
 
-export { preSignup, signup, login };
+
+
+export { preSignup, signup, login , Logout };

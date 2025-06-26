@@ -10,11 +10,11 @@ import { protect, admin } from "../middleware/auth.js";
 
 const PostRoutes = express.Router();
 
-PostRoutes.get("/user/:userId", getAllPosts);
-PostRoutes.get("/user/:id", getPostById);
-PostRoutes.post("/user/", protect, createPost);
-PostRoutes.put("/user/:id/like", protect, likePost);
-PostRoutes.delete("/user/:id", protect, deletePost);
-PostRoutes.get("/user/:userId", protect, admin, getPostsByUser);
+PostRoutes.get("/:id", getAllPosts);
+PostRoutes.get("/:id", getPostById);
+PostRoutes.post("/user/:id", protect, createPost);
+PostRoutes.put("/:id/like", protect, likePost);
+PostRoutes.delete("/:id", protect, deletePost);
+// PostRoutes.get("/user/:id", protect, admin, getPostsByUser);
 
 export default PostRoutes;

@@ -1,10 +1,15 @@
 import express from "express";
 const authRouter = express.Router();
 import * as auth from "../controllers/authController.js";
-
+import * as user from "../controllers/user.Controller.js";
+import { protect } from "../middleware/auth.js";
 authRouter
   .post("/signup", auth.signup)
   .post("/login", auth.login)
-  .post("/pre-signup", auth.preSignup);
+  .post("/pre-signup", auth.preSignup)
+  .post("/logout", auth.Logout);
 
+authRouter
+  .put("/update-profile/:id" ,protect , user.UpdateUserProfile)
+  .get("/me", protect , user.getUserProfile);
 export default authRouter;
