@@ -1,13 +1,13 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap");
 @import "tailwindcss";
 @theme {
-  --color-body: #131415;
-  --color-gray: #292b2e;
+  --color-body: #0f1112;
+  --color-gray: #242629;
   --color-gray-200: #14141420;
-  --color-white: #d9e4ed;
+  --color-white: #e0e0e0;
   --color-midGray: #494c52;
   --color-lightGray: #efefef;
-  --color-skin: #ffd37d;
+  --color-skin: #ffc862;
   --color-lightestSky: #ffd37d;
 }
 * {

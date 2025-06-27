@@ -5,14 +5,13 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Get auth data from localStorage
     const authData = JSON.parse(localStorage.getItem("auth"));
     
     if (authData) {
       setUserData({
-        ...authData.user,        // User details from localStorage
-        token: authData.token,    // From localStorage
-        refreshToken: authData.refreshToken  // From localStorage
+        ...authData.user,       
+        token: authData.token,    
+        refreshToken: authData.refreshToken  
       });
     }
   }, []);

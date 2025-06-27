@@ -8,9 +8,9 @@ import PostRoutes from "./routes/postRoutes.js";
 
 
 app.use(cors());
-app.use('/api/comments', commentRoutes);
+app.use(`${pre}/comments`, commentRoutes);
 app.use(`${pre}/posts`, PostRoutes);
 app.use(`${pre}/auth` , authRouter);
 app.listen(PORT , (req , res) => {
-     res.send("app is run on port " + PORT);
+     console.log("app is run on port " + PORT);
 });

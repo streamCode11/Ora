@@ -230,7 +230,6 @@ const login = async (req, res) => {
     });
   }
 };
-// Logout function to invalidate the token
 let blacklistToken = [];
 const Logout = async (req, res) => {
   let token = req.headers.authorization.split(" ")[1];

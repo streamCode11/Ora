@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiHome,
   FiCompass,
@@ -10,11 +10,9 @@ import {
 import { RiMessengerLine } from "react-icons/ri";
 import { Link } from "react-router-dom";
 import webLogo from "../../assets/Ora bg.png";
-import profileImg from "../../assets/images/1.jpeg";
 import PostForm from "../posts/PostForm";
 import Apis from "../../config/apis";
 import axios from "axios";
-import { useAuth } from "../../context/auth";
 
 const Logout = async () => {
   try {
@@ -38,10 +36,27 @@ const Logout = async () => {
   }
 };
 
-
-
 const Sidebar = () => {
   const [openPostForm, setOpenPostForm] = useState(false);
+  const [userData, setUserData] = useState({
+    profileImg: "",
+    username: "",
+    firstName: "",
+    token: ""
+  });
+
+  useEffect(() => {
+    try {
+      const authdata = JSON.parse(localStorage.getItem("auth"));
+      if (authdata) {
+        setUserData({
+          ...authdata.user,
+        });
+      }
+    } catch (error) {
+      console.error("Error parsing auth data:", error);
+    }
+  }, []);
 
   const navLinks = [
     {
@@ -77,10 +92,10 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="  h-screen w-70  flex flex-col justify-between py-3 bg-gray  shadow-sm">
+    <div className="h-screen w-70 flex flex-col justify-between py-3 bg-gray shadow-sm">
       <div className="flex flex-col px-4 space-y-1">
         <div className="h-19 w-auto">
-          <img src={webLogo} className="h-full w-auto" alt="" />
+          <img src={webLogo} className="h-full w-auto" alt="Website Logo" />
         </div>
         {navLinks.map((link) => (
           <Link
@@ -90,7 +105,7 @@ const Sidebar = () => {
                       text-white hover:bg-skin transition-colors
                       hover:text-slate-700"
           >
-            <span className="">{link.icon}</span>
+            <span>{link.icon}</span>
             <span className="text-sm font-medium">{link.name}</span>
           </Link>
         ))}
@@ -101,35 +116,35 @@ const Sidebar = () => {
                     text-white hover:bg-skin transition-colors
                     hover:text-slate-700 mt-2"
         >
-          <FiPlus className="text-xl " />
+          <FiPlus className="text-xl" />
           <span className="text-sm font-medium">Create Post</span>
         </button>
       </div>
 
       <div className="px-4 pb-4">
-        <div className=" pt-2">
+        <div className="pt-2">
           <Link
-            to=""
-            className="flex items-center gap-3 text-gray-100 px-3 py-2 rounded-lg hover:bg-skin hover:text-slate-700  transition-all"
+            to="/profile"
+            className="flex items-center gap-3 text-gray-100 px-3 py-2 rounded-lg hover:bg-skin hover:text-slate-700 transition-all"
           >
             <img
-              src={profileImg}
+              src={userData.profileImg || "/default-profile.png"}
               alt="Profile"
               className="w-8 h-8 rounded-full object-cover"
             />
-            <span className="text-sm font-medium  ">
-              Alam Higgins
+            <span className="text-sm font-medium">
+              {userData.username || "User"}
             </span>
           </Link>
 
-          <Link
+          <button
             onClick={Logout}
-            className="flex items-center px-3 py-2 gap-3 rounded-lg
-                      text-white hover:bg-skin  hover:text-slate-700 transition-colors mt-1"
+            className="flex items-center w-full px-3 py-2 gap-3 rounded-lg
+                      text-white hover:bg-skin hover:text-slate-700 transition-colors mt-1"
           >
-            <FiLogOut className="text-xl " />
+            <FiLogOut className="text-xl" />
             <span className="text-sm font-medium">Log Out</span>
-          </Link>
+          </button>
         </div>
       </div>
 
