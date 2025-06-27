@@ -12,5 +12,6 @@ app.use(`${pre}/comments`, commentRoutes);
 app.use(`${pre}/posts`, PostRoutes);
 app.use(`${pre}/auth` , authRouter);
 app.listen(PORT , (req , res) => {
+
      console.log("app is run on port " + PORT);
 });
