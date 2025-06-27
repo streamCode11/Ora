@@ -26,9 +26,9 @@ const Register = () => {
     setLoading(true);
     try {
       const { data } = await axios.post(`${Apis.auth}/pre-signup`, {
-        email,
         username,
-        password
+        email,
+        password,
       });
       
       if (data.error) {

@@ -41,7 +41,6 @@ const Sidebar = () => {
   const [userData, setUserData] = useState({
     profileImg: "",
     username: "",
-    firstName: "",
     token: ""
   });
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState , useEffect } from "react";
 import {
   FiSearch,
   FiHome,
@@ -11,14 +11,34 @@ import { RiMessengerLine } from "react-icons/ri";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { CgMenuGridO } from "react-icons/cg";
 import Logo from "../../assets/Ora bg.png";
-import ProfileImg from "../../assets/images/1.jpeg";
 import Dropdown from "./Dropdown";
 import PostForm from "../posts/PostForm";
+import Apis from "../../config/apis";
+import axios from "axios";
 
 const Navbar = () => {
   const [isPostFormOpen, setIsPostFormOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [userData, setUserData] = useState({
+    profileImg: "",
+    username: "",
+    firstName: "",
+    token: ""
+  });
 
+  
+  useEffect(() => {
+    try {
+      const authdata = JSON.parse(localStorage.getItem("auth"));
+      if (authdata) {
+        setUserData({
+          ...authdata.user,
+        });
+      }
+    } catch (error) {
+      console.error("Error parsing auth data:", error);
+    }
+  }, []);
   return (
     <div className="fixed w-[calc(100vw-280px)] top-0 left-70 z-50 bg-gray  border-b ">
       <div className=" mx-auto px-4">
@@ -54,7 +74,7 @@ const Navbar = () => {
               >
                 <img
                   className="h-8 w-8 rounded-full object-cover"
-                  src={ProfileImg}
+                  src={userData.profileImg}
                   alt="User profile"
                 />
               </button>

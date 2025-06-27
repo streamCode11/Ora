@@ -114,6 +114,10 @@ const LoginPage = () => {
             </button>
           </div>
         </form>
+        <span className='flex items-center justify-center text-skin gap-2 mt-3 capitalize'>
+        Don't have an account?
+          <Link to="/register" className='hover:underline'>create account</Link>
+        </span>
       </div>
     </div>
   );

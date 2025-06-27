@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate , Link } from "react-router-dom";
 import apis from "../../config/apis";
 import axios from "axios";
 import webLogo from '../../assets/Ora bg.png';
 import LoaderCom from "../../components/common/Loader";
+
 
 const ActivateAccount = () => {
   const { token } = useParams();
