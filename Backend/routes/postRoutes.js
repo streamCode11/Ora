@@ -1,20 +1,17 @@
 import express from "express";
-import {
-  createPost,
-  getAllPosts,
-  getPostById,
-  deletePost,
-  likePost
-} from "../controllers/postController.js";
+import * as post from "../controllers/postController.js";
 import { protect, admin } from "../middleware/auth.js";
 
 const PostRoutes = express.Router();
+outer
+  .route("/")
+  .post(protect, post.uploadPostMedia, post.uploadMedia)
+  .get(getAllPosts);
 
-PostRoutes.get("/:id", getAllPosts);
-PostRoutes.get("/:id", getPostById);
-PostRoutes.post("/user/:id", protect, createPost);
-PostRoutes.put("/:id/like", protect, likePost);
-PostRoutes.delete("/:id", protect, deletePost);
-// PostRoutes.get("/user/:id", protect, admin, getPostsByUser);
+PostRoutes.route("/user/:userId").get(post.getPostsByUserId);
+
+PostRoutes.route("/:id").get(post.getPostById).delete(protect, post.deletePost);
+
+PostRoutes.route("/:id/like").post(protect, post.likePost);
 
 export default PostRoutes;

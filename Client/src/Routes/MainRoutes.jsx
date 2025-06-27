@@ -6,6 +6,7 @@ import LoginPage from '../pages/auth/LoginPage'
 import ProfilePage from '../pages/profile/ProfilePage'
 import Register from '../pages/auth/RegisterPage'
 import ActivateAccount from '../pages/auth/ActivateAcc'
+import EditProfilePage from '../pages/profile/EditProfilePage'
 
 const MainRoutes = () => {
   return (
@@ -18,6 +19,7 @@ const MainRoutes = () => {
           <Route index element={<HomePage/>}/>
           <Route path='/home' element={<HomePage/>}/>
           <Route path="profile" element={<ProfilePage/>}/>
+          <Route path='/edit-profile' element={<EditProfilePage/>}/>
         </Route>
       </Routes>
   )
