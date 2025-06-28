@@ -10,7 +10,7 @@
   --color-skin: #ffc862;
   --color-lightestSky: #ffd37d;
 }
- {
+* {
   font-family: "DM Mono", monospace;
 }
 body {

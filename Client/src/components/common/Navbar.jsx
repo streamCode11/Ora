@@ -14,11 +14,12 @@ import Logo from "../../assets/Ora bg.png";
 import Dropdown from "./Dropdown";
 import PostForm from "../posts/PostForm";
 import Apis from "../../config/apis";
-import axios from "axios";
+import NotificationList from "../ui/NotificationList";
 
 const Navbar = () => {
   const [isPostFormOpen, setIsPostFormOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [openNotification , setOpenNotification] = useState(false);
   const [userData, setUserData] = useState({
     profileImg: "",
     username: "",
@@ -39,6 +40,10 @@ const Navbar = () => {
       console.error("Error parsing auth data:", error);
     }
   }, []);
+
+  const handleOpenNotification = () => {
+      setOpenNotification(true)
+  }
   return (
     <div className="fixed w-[calc(100vw-280px)] top-0 left-70 z-50 bg-gray  border-b ">
       <div className=" mx-auto px-4">
@@ -55,17 +60,21 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-2 min-w-[180px] justify-end">
-            <button className="p-2 rounded-lg bg-midGray text-skin relative">
+            <button className="p-2 rounded-lg bg-midGray text-skin relative" onClick={handleOpenNotification}>
               <RiMessengerLine size={26} />
               <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-red-500"></span>
             </button>
 
-            <button className="p-2 rounded-lg bg-midGray text-skin relative">
+            <button className="p-2 rounded-lg bg-midGray text-skin relative"
+            onClick={handleOpenNotification}>
               <IoMdNotificationsOutline size={26} />
               <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
                 3
               </span>
             </button>
+            {
+              openNotification ? <NotificationList/> : null
+            }
 
             <div className="relative ml-2">
               <button
