@@ -1,17 +1,38 @@
 import app from "./inc/app.js";
-import {PORT , pre} from "./config/cloudinary.js";
+import express from "express";
+import {PORT, pre} from "./config/cloudinary.js";
 import DatabaseConn from "./config/db.js";
-import cors from "cors"
+import cors from "cors";
+import path from 'path';
+import { fileURLToPath } from 'url';
 import authRouter from "./routes/authRoutes.js";
 import commentRoutes from './routes/commentRoutes.js';
 import PostRoutes from "./routes/postRoutes.js";
+import http from 'http';
+import { Server } from 'socket.io';
 
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const uploadsDir = path.join(__dirname, 'uploads');
+import fs from 'fs';
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+app.use('/uploads', express.static(uploadsDir));
 
 app.use(cors());
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+
 app.use(`${pre}/comments`, commentRoutes);
 app.use(`${pre}/posts`, PostRoutes);
-app.use(`${pre}/auth` , authRouter);
-app.listen(PORT , (req , res) => {
+app.use(`${pre}/auth`, authRouter);
 
-     console.log("app is run on port " + PORT);
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

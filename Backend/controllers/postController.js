@@ -1,28 +1,36 @@
+import fs from 'fs';
 import Post from "../models/postSchema.js";
 import multer from "multer";
 import path from 'path';
 import { v4 as uuidv4 } from "uuid";
 
+
+const uploadDir = './uploads/posts';
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "/uploads/post");
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    const ext = file.extname(file.originalname);
+    const ext = path.extname(file.originalname);
     cb(null, `${uuidv4()}${ext}`);
   },
 });
 
-const fileFilterPath = (req, file, cd) => {
+const fileFilter = (req, file, cb) => {  
   if (file.mimetype.startsWith("image/")) {
     cb(null, true);
   } else {
-    cb(new Error("images are accepted only"), false);
+    cb(new Error("Only images are accepted"), false);
   }
 };
+
 const upload = multer({
   storage,
-  fileFilterPath,
+  fileFilter,  
   limits: { fileSize: 10 * 1024 * 1024 },
 });
 
@@ -30,50 +38,43 @@ const uploadPostMedia = upload.array("media", 10);
 
 const uploadMedia = async (req, res) => {
   try {
-    const { caption, settings } = req.body;
-    const userId = req.user.id;
+    console.log('Uploading media...'); // Debug log
+    console.log('Files:', req.files); // Debug log
+    console.log('Body:', req.body); // Debug log
 
-    if (!req.files || !req.files.length === "0") {
-      return res.status(400).json({
-        success: false,
-        message: "At least one media file is required",
-      });
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "No files uploaded" });
     }
-    const mediaFiles = req.files.map((file) => ({
+
+    const mediaFiles = req.files.map(file => ({
       url: `/uploads/posts/${file.filename}`,
-      type: "image",
+      type: file.mimetype.startsWith('image/') ? 'image' : 'video'
     }));
 
     const post = await Post.create({
-      user: userId,
+      user: req.user.id,
       media: mediaFiles,
-      caption,
-      settings: settings
-        ? JSON.parse(settings)
-        : {
-            hideLikeCount: false,
-            disableComments: false,
-          },
+      caption: req.body.caption,
+      settings: req.body.settings || {
+        hideLikeCount: false,
+        disableComments: false
+      }
     });
 
-    const populatedPost = await Post.findById(post._id).populate(
-      "user",
-      "username firstName lastName avatar"
-    );
-
-    res.status(201).json({
-      success: true,
-      data: populatedPost,
-    });
+    res.status(201).json(post);
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
+    console.error('Post creation error:', err);
+    res.status(500).json({ 
+      message: 'Failed to create post',
+      error: err.message 
     });
   }
 };
 
-const getAllPosts = async (_req, res) => {
+
+
+
+const getAllPosts = async (req, res) => {
   try {
     const posts = await Post.find()
       .populate("user", "username firstName lastName")
@@ -87,9 +88,7 @@ const getAllPosts = async (_req, res) => {
 
 const getPostsByUserId = async (req, res) => {
   try {
-    const { userId } = req.params;
-
-    const posts = await Post.find({ user: userId })
+    const posts = await Post.find({ user: req.user.id }) 
       .populate("user", "username firstName lastName avatar")
       .sort({ createdAt: -1 });
 

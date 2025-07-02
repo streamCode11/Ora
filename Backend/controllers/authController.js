@@ -252,6 +252,26 @@ const Logout = async (req, res) => {
     })
   }
 }
+const refreshToken = async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(401).json({ message: 'Refresh token required' });
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET);
+    const user = await User.findById(decoded.id);
+    
+    const newToken = generateToken(user._id); // Your existing token generation function
+    
+    res.json({ 
+      token: newToken 
+    });
+  } catch (error) {
+    res.status(403).json({ message: 'Invalid refresh token' });
+  }
+};
 
 
 

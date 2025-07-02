@@ -10,9 +10,9 @@ import {
 import { RiMessengerLine } from "react-icons/ri";
 import { Link } from "react-router-dom";
 import webLogo from "../../assets/Ora bg.png";
-import PostForm from "../posts/PostForm";
 import Apis from "../../config/apis";
 import axios from "axios";
+import PostForm from "../posts/PostForm";
 
 const Logout = async () => {
   try {
@@ -148,7 +148,7 @@ const Sidebar = () => {
       </div>
 
       {openPostForm && (
-        <PostForm closePostForm={() => setOpenPostForm(false)} />
+        <PostForm closePostForm={() => setOpenPostForm(false)}  />
       )}
     </div>
   );

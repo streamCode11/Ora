@@ -1,63 +1,94 @@
 import User from "../models/authSchema.js";
-import responseTokenAndUser from "../helpers/sendUserandTokenResponse.js";
 
 const UpdateUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.user.id);
     if (!user) {
-      return res.json({
+      return res.status(404).json({
         message: "User not found",
         ok: false,
       });
     }
-    if (user) {
-      const { username, firstName, lastName, bio, profileImg } = req.body;
-      user.username = username || user.username;
-      user.firstName = firstName || user.firstName;
-      user.lastName = lastName || user.lastName;
-      user.bio = bio || user.bio;
-      user.profileImg = profileImg || user.profileImg;
-      const updateUser = await user.save();
+    
+    const { username, firstName, lastName, bio, profileImg } = req.body;
+    user.username = username || user.username;
+    user.firstName = firstName || user.firstName;
+    user.lastName = lastName || user.lastName;
+    user.bio = bio || user.bio;
+    user.profileImg = profileImg || user.profileImg;
+    
+    const updatedUser = await user.save();
 
-      return res.json({
-        message: "User updated successfully",
-        ok: true,
-        user: {
-          username: updateUser.username,
-          firstName: updateUser.firstName,
-          lastName: updateUser.lastName,
-          bio: updateUser.bio,
-          profileImg: updateUser.profileImg,
-        },
-      });
-    }
+    return res.json({
+      message: "User updated successfully",
+      ok: true,
+      user: {
+        _id: updatedUser._id,
+        username: updatedUser.username,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        bio: updatedUser.bio,
+        profileImg: updatedUser.profileImg,
+        followers: updatedUser.followers,
+        following: updatedUser.following,
+        createdAt: updatedUser.createdAt
+      },
+    });
 
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
-const getUserProfile = async (req , res) => {
-    try{
-        const user = req.body;
-        if(!user){
-          return res.json({
-            error:"user not found with this given id",
-            ok:false,
-          })
-        }
-        if(user){
-          return  res.json({
-            user, 
-            ok:true
-          })
-        }
-    }catch(err){
-      return res.json({
-        error:err.message,
-        ok:false
-      })
-    }
-}
 
-export { UpdateUserProfile , getUserProfile};
+const getUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+      .select('-password -email -__v');
+    
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found",
+        ok: false,
+      });
+    }
+    
+    return res.json({
+      user, 
+      ok: true
+    });
+    
+  } catch (err) {
+    return res.status(500).json({
+      error: err.message,
+      ok: false
+    });
+  }
+};
+
+const getMyProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id)
+      .select('-password -__v');
+    
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found",
+        ok: false,
+      });
+    }
+    
+    return res.json({
+      user,
+      ok: true
+    });
+    
+  } catch (err) {
+    return res.status(500).json({
+      message: err.message,
+      ok: false
+    });
+  }
+};
+
+export { UpdateUserProfile, getUserProfile, getMyProfile };

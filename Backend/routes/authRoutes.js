@@ -10,6 +10,7 @@ authRouter
   .post("/logout", auth.Logout);
 
 authRouter
-  .put("/update-profile/:id"  , user.UpdateUserProfile)
-  .get("/me", protect , user.getUserProfile);
+  .put("/update-profile", protect, user.UpdateUserProfile)
+  .get("/me", protect, user.getMyProfile)
+  .get("/:id", user.getUserProfile); 
 export default authRouter;

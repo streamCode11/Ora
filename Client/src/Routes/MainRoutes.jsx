@@ -17,6 +17,7 @@ const MainRoutes = () => {
         
         <Route path="/" element={<MainPage/>}>
           <Route index element={<HomePage/>}/>
+          {/* <Route path='/message' element={<ChatWindow/>}/> */}
           <Route path='/home' element={<HomePage/>}/>
           <Route path="profile" element={<ProfilePage/>}/>
           <Route path='/edit-profile' element={<EditProfilePage/>}/>

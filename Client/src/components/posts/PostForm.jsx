@@ -1,4 +1,5 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
+import axios from "axios";
 import {
   FiShare,
   FiX,
@@ -13,6 +14,7 @@ import {
 import ReactCrop from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import EmojiPicker from "emoji-picker-react";
+import Apis from "../../config/apis";
 
 const PostForm = ({ closePostForm }) => {
   const [links, setLinks] = useState([]);
@@ -20,16 +22,122 @@ const PostForm = ({ closePostForm }) => {
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [media, setMedia] = useState([]);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
-  const [crop, setCrop] = useState({ unit: "%", width: 100, height: 100 });
-  const [currentCropIndex, setCurrentCropIndex] = useState(null);
   const [postText, setPostText] = useState("");
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [submitting, setIsSubmitting] = useState(false);
+  const [linkPreview, setLinkPreview] = useState(null);
+  const [isFetchingLink, setIsFetchingLink] = useState(false);
 
   const imgRef = useRef(null);
   const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
   const dropAreaRef = useRef(null);
+
+  useEffect(() => {
+    const authData = JSON.parse(localStorage.getItem("auth"));
+    if (authData && authData.user && authData.token) {
+      setCurrentUser(authData.user);
+    } else {
+      console.log("No user or token found");
+      closePostForm();
+    }
+  }, []);
+
+  const fetchLinkPreview = async (url) => {
+    try {
+      setIsFetchingLink(true);
+      const response = await axios.get(`https://api.linkpreview.net/?key=YOUR_API_KEY&q=${encodeURIComponent(url)}`);
+      
+      return {
+        title: response.data.title || 'Link Preview',
+        description: response.data.description || '',
+        image: response.data.image || 'https://via.placeholder.com/300',
+        domain: new URL(url).hostname
+      };
+    } catch (err) {
+      console.log('Error fetching link preview:', err);
+      return {
+        title: 'Link Preview',
+        description: '',
+        image: 'https://via.placeholder.com/300',
+        domain: new URL(url).hostname
+      };
+    } finally {
+      setIsFetchingLink(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!currentUser) {
+      console.log("You must be logged in to create a post");
+      return;
+    }
+  
+    setIsSubmitting(true);
+    
+    try {
+      const formData = new FormData();
+      
+      media.forEach((mediaItem) => {
+        formData.append('media', mediaItem.file);
+        // Add mediaType based on file type
+        const mediaType = mediaItem.file.type.startsWith('image/') ? 'image' : 
+                         mediaItem.file.type.startsWith('video/') ? 'video' : 'file';
+        formData.append('mediaType', mediaType);
+      });
+      
+      formData.append('caption', postText);
+      
+      if (linkPreview) {
+        formData.append('linkUrl', currentLink);
+        formData.append('linkTitle', linkPreview.title);
+        formData.append('linkDescription', linkPreview.description);
+        formData.append('linkImage', linkPreview.image);
+      }
+      
+      formData.append('settings', JSON.stringify({
+        hideLikeCount: false,
+        disableComments: false
+      }));
+      
+      const authData = JSON.parse(localStorage.getItem("auth"));
+      const token = authData.token;
+      
+      if (!token) {
+        console.log("No authentication token found");
+        return;
+      }
+      
+      const response = await axios.post(
+        `${Apis.base}/posts`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      if (response.data) {
+        console.log('Post created successfully!');
+        closePostForm();
+        window.location.reload(); 
+      }
+    } catch (error) {
+      console.log('Error creating post:', error);
+      if (error.response) {
+        console.log('Response data:', error.response.data);
+        console.log('Response status:', error.response.status);
+        console.log('Response headers:', error.response.headers);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleMediaUpload = (files) => {
     const newMedia = Array.from(files).map((file) => {
@@ -47,10 +155,24 @@ const PostForm = ({ closePostForm }) => {
     if (media.length === 0) setCurrentMediaIndex(0);
   };
 
+  const handleLinkSubmit = async (e) => {
+    e.preventDefault();
+    if (!currentLink.trim()) return;
+
+    try {
+      new URL(currentLink);
+      
+      const preview = await fetchLinkPreview(currentLink);
+      setLinkPreview(preview);
+      
+      setShowLinkInput(false);
+    } catch (err) {
+      console.log('Invalid URL:', err);
+    }
+  };
   const handleFileChange = (e) => {
     handleMediaUpload(e.target.files);
   };
-
   const handleDragEnter = (e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -73,14 +195,7 @@ const PostForm = ({ closePostForm }) => {
     }
   };
 
-  const handleLinkSubmit = (e) => {
-    e.preventDefault();
-    if (currentLink.trim()) {
-      setLinks((prev) => [...prev, currentLink]);
-      setCurrentLink("");
-      setShowLinkInput(false);
-    }
-  };
+ 
 
   const handleMediaClick = (index) => {
     if (media[index].type === "image") {
@@ -89,124 +204,31 @@ const PostForm = ({ closePostForm }) => {
     }
   };
 
-  const onImageLoad = useCallback((img) => {
-    imgRef.current = img;
-  }, []);
-
-  const applyCrop = () => {
-    if (currentCropIndex === null || !imgRef.current) return;
-
-    const canvas = document.createElement("canvas");
-    const image = imgRef.current;
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
-
-    canvas.width = crop.width;
-    canvas.height = crop.height;
-    const ctx = canvas.getContext("2d");
-
-    const pixelCrop = {
-      x: crop.x * scaleX,
-      y: crop.y * scaleY,
-      width: crop.width * scaleX,
-      height: crop.height * scaleY,
-    };
-
-    ctx.drawImage(
-      image,
-      pixelCrop.x,
-      pixelCrop.y,
-      pixelCrop.width,
-      pixelCrop.height,
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
-
-    const croppedUrl = canvas.toDataURL("image/jpeg");
-
-    setMedia((prev) => {
-      const updated = [...prev];
-      updated[currentCropIndex] = {
-        ...updated[currentCropIndex],
-        croppedUrl,
-        crop: { ...crop },
-      };
-      return updated;
-    });
-
-    setCurrentCropIndex(null);
-  };
-
-  const nextMedia = () => {
-    setCurrentMediaIndex((prev) => (prev + 1) % media.length);
-  };
-
-  const prevMedia = () => {
-    setCurrentMediaIndex((prev) => (prev - 1 + media.length) % media.length);
-  };
-
-  const removeMedia = (index) => {
-    URL.revokeObjectURL(media[index].url);
-    if (media[index].croppedUrl) {
-      URL.revokeObjectURL(media[index].croppedUrl);
-    }
-
-    setMedia((prev) => prev.filter((_, i) => i !== index));
-    if (currentMediaIndex >= media.length - 1) {
-      setCurrentMediaIndex((prev) => Math.max(0, prev - 1));
-    }
-  };
-
-  const removeLink = (index) => {
-    setLinks((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const onEmojiClick = (emojiData) => {
-    const cursorPosition = textareaRef.current.selectionStart;
-    const textBefore = postText.substring(0, cursorPosition);
-    const textAfter = postText.substring(cursorPosition);
-
-    setPostText(`${textBefore}${emojiData.emoji}${textAfter}`);
-
-    setTimeout(() => {
-      textareaRef.current.focus();
-      textareaRef.current.selectionStart =
-        cursorPosition + emojiData.emoji.length;
-      textareaRef.current.selectionEnd =
-        cursorPosition + emojiData.emoji.length;
-    }, 0);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log({
-      text: postText,
-      media,
-      links,
-    });
-    closePostForm();
-  };
 
   return (
-    <div className="fixed inset-0 bg-gray-200 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50 ">
-      <div className="bg-gray rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-gray-200 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50">
+      <form 
+        onSubmit={handleSubmit}
+        className="bg-gray rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
+      >
+        {/* Header */}
         <div className="border-b border-gray-200 p-4 flex justify-between items-center">
           <h2 className="text-xl font-semibold text-skin">Create Post</h2>
           <button
+            type="button"
             onClick={closePostForm}
             className="text-skin hover:text-skin p-1 rounded-full hover:bg-midGray"
           >
             <FiX size={24} />
           </button>
         </div>
-
-        <div className=" text-center flex items-center">
-          <h1 className={`flex-1 py-3 font-medium   text-white`}>Post</h1>
+  
+        <div className="text-center flex items-center">
+          <h1 className="flex-1 py-3 font-medium text-white">Post</h1>
         </div>
-
+  
         <div className="flex-1 overflow-y-auto p-4">
+          {/* Textarea */}
           <textarea
             ref={textareaRef}
             value={postText}
@@ -215,37 +237,38 @@ const PostForm = ({ closePostForm }) => {
             className="w-full border-0 outline-0 resize-none text-white placeholder-white min-h-[100px] text-lg"
             rows="3"
           />
-
-          {links.length > 0 && (
-            <div className="mb-4">
-              <h3 className="text-sm font-medium text-skin mb-2">Links</h3>
-              <div className="space-y-2">
-                {links.map((link, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between bg-midGray p-3 rounded-lg"
-                  >
-                    <a
-                      href={link.startsWith("http") ? link : `https://${link}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-skin truncate text-sm"
-                    >
-                      {link}
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => removeLink(index)}
-                      className="text-skin  ml-2"
-                    >
-                      <FiX size={16} />
-                    </button>
-                  </div>
-                ))}
+  
+          {/* Link Preview */}
+          {linkPreview && (
+            <div className="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+              <div className="flex flex-col sm:flex-row">
+                <div className="sm:w-1/3 bg-gray-100">
+                  <img 
+                    src={linkPreview.image} 
+                    alt="Link preview" 
+                    className="w-full h-40 sm:h-full object-cover"
+                  />
+                </div>
+                <div className="sm:w-2/3 p-3">
+                  <h4 className="font-bold text-sm sm:text-base mb-1 line-clamp-2">{linkPreview.title}</h4>
+                  <p className="text-gray-600 text-xs sm:text-sm mb-2 line-clamp-2">{linkPreview.description}</p>
+                  <span className="text-gray-500 text-xs">{linkPreview.domain}</span>
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setLinkPreview(null);
+                  setCurrentLink("");
+                }}
+                className="w-full py-2 bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors text-sm"
+              >
+                Remove Link
+              </button>
             </div>
           )}
-
+  
+          {/* Media Preview */}
           {media.length > 0 && (
             <div className="mb-4 relative">
               <div
@@ -278,16 +301,16 @@ const PostForm = ({ closePostForm }) => {
                     </button>
                   </>
                 )}
-
-                  <img
-                    src={
-                      media[currentMediaIndex]?.croppedUrl ||
-                      media[currentMediaIndex]?.url
-                    }
-                    alt={`Preview ${currentMediaIndex + 1}`}
-                    className="w-full h-full object-contain cursor-pointer"
-                    onClick={() => handleMediaClick(currentMediaIndex)}
-                  />
+  
+                <img
+                  src={
+                    media[currentMediaIndex]?.croppedUrl ||
+                    media[currentMediaIndex]?.url
+                  }
+                  alt={`Preview ${currentMediaIndex + 1}`}
+                  className="w-full h-full object-contain cursor-pointer"
+                  onClick={() => handleMediaClick(currentMediaIndex)}
+                />
               
                 <button
                   type="button"
@@ -297,12 +320,13 @@ const PostForm = ({ closePostForm }) => {
                   <FiX size={16} className="text-skin" />
                 </button>
               </div>
-
+  
               {media.length > 1 && (
                 <div className="flex justify-center mt-2 space-x-2">
                   {media.map((_, index) => (
                     <button
                       key={index}
+                      type="button"
                       onClick={() => setCurrentMediaIndex(index)}
                       className={`w-2 h-2 rounded-full ${
                         index === currentMediaIndex ? "bg-skin" : "bg-midGray"
@@ -313,28 +337,30 @@ const PostForm = ({ closePostForm }) => {
               )}
             </div>
           )}
-
+  
           {/* Link input */}
-          {showLinkInput ? (
+          {showLinkInput && (
             <div className="mb-4 flex items-center gap-2">
               <input
                 type="text"
                 value={currentLink}
                 onChange={(e) => setCurrentLink(e.target.value)}
                 placeholder="Paste a link..."
-                className="flex-1 p-2  rounded-lg text-skin bg-midGray placeholder-white  outline-none border-none "
+                className="flex-1 p-2 rounded-lg text-skin bg-midGray placeholder-white outline-none border-none"
                 autoFocus
               />
               <button
                 type="button"
                 onClick={handleLinkSubmit}
-                className="bg-midGray text-white px-4 py-2 rounded-lg hover:bg-midGray"
+                disabled={isFetchingLink}
+                className="bg-midGray text-white px-4 py-2 rounded-lg hover:bg-midGray disabled:opacity-50"
               >
-                Add
+                {isFetchingLink ? '...' : 'Preview'}
               </button>
             </div>
-          ) : null}
-
+          )}
+  
+          {/* Crop modal */}
           {currentCropIndex !== null && (
             <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
               <div className="bg-gray rounded-xl p-4 max-w-4xl w-full max-h-[90vh] overflow-auto">
@@ -374,7 +400,8 @@ const PostForm = ({ closePostForm }) => {
               </div>
             </div>
           )}
-
+  
+          {/* Emoji picker */}
           {showEmojiPicker && (
             <div className="absolute bottom-16 right-20 z-10">
               <EmojiPicker
@@ -385,7 +412,8 @@ const PostForm = ({ closePostForm }) => {
             </div>
           )}
         </div>
-
+  
+        {/* Footer with action buttons */}
         <div className="border-t border-gray-200 p-4">
           <div className="flex justify-between items-center">
             <div className="flex space-x-2">
@@ -401,11 +429,11 @@ const PostForm = ({ closePostForm }) => {
                   ref={fileInputRef}
                   className="hidden"
                   onChange={handleFileChange}
-                  accept="image/*"
+                  accept="image/*,video/*"
                   multiple
                 />
               </button>
-
+  
               <button
                 type="button"
                 onClick={() => setShowLinkInput(!showLinkInput)}
@@ -418,7 +446,7 @@ const PostForm = ({ closePostForm }) => {
               >
                 <FiLink size={20} />
               </button>
-
+  
               <button
                 type="button"
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
@@ -428,22 +456,21 @@ const PostForm = ({ closePostForm }) => {
                 <FiSmile size={20} />
               </button>
             </div>
-
+  
             <button
               type="submit"
-              onClick={handleSubmit}
-              disabled={!postText && media.length === 0 && links.length === 0}
+              disabled={(!postText && media.length === 0 && !linkPreview) || submitting}
               className={`px-6 py-2 rounded-lg font-medium ${
-                !postText && media.length === 0 && links.length === 0
+                (!postText && media.length === 0 && !linkPreview) || submitting
                   ? "text-skin hover:text-skin hover:bg-midGray cursor-not-allowed"
                   : "bg-midGray text-white hover:bg-midGray"
               }`}
             >
-              Post
+              {submitting ? "Posting..." : "Post"}
             </button>
           </div>
         </div>
-      </div>
+      </form>
     </div>
   );
 };
