@@ -17,7 +17,7 @@ const EmailTemplate = (receiver_email, subject, body) => {
           Charset: "UTF-8",
           Data: `
              <html>
-                  <body style="background-color: black; color: white; padding: 10px " >
+                  <body style="background-color: bg-gray; color: white; padding: 10px " >
                         <h1>Ora.com  </h1>                                 
                         ${body}                                   
                         <p>Thank you. </p>                                 

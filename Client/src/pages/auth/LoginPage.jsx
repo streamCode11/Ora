@@ -10,6 +10,7 @@ const LoginPage = () => {
   const [inputType, setInputType] = useState('password');
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
+  const [username , setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

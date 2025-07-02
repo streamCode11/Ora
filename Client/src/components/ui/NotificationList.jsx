@@ -1,14 +1,19 @@
 import React, { useState } from "react";
-import { FiBell } from "react-icons/fi";
+import { FiBell, FiX } from "react-icons/fi";
 
-const NotificationList = ({ notifications = [] }) => {
+const NotificationList = ({ notifications = [] , closeNotification }) => {
   return (
-    <div className="relative">
-
-        <div className="absolute right-0 mt-2 w-80 bg-gray shadow-lg rounded-lg p-4 z-50">
-          <h3 className="font-semibold text-gray-800 mb-2">Notifications</h3>
+    <div className="">
+        <div className="absolute right-10 top-20  w-90 bg-gray shadow-lg rounded-lg p-4 z-50">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-skin mb-2">Notifications</h3>
+          <div className="flex justify-center items-center bg-midGray text-skin p-2 rounded-full"
+          onClick={closeNotification}>
+              <FiX className="justify-center items-center flex"/>
+          </div>
+        </div>
           {notifications.length === 0 ? (
-            <p className="text-gray-500">No new notifications.</p>
+            <p className="text-white">No new notifications.</p>
           ) : (
             <div className="space-y-2">
               {notifications.map(n => (
@@ -21,7 +26,7 @@ const NotificationList = ({ notifications = [] }) => {
                     {n.type === "like" && "liked your post."}
                     {n.type === "comment" && "commented on your post."}
                     {n.type === "follow" && "started following you."}
-                    <div className="text-xs text-gray-500 mt-1">{n.timeAgo}</div>
+                    <div className="text-xs text-white mt-1">{n.timeAgo}</div>
                   </div>
                 </div>
               ))}

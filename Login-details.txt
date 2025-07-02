@@ -6,6 +6,3 @@
     "email":"its19083@gmail.com",
     "password":"Um@r1003!!"
 }
-
-
-

@@ -5,7 +5,8 @@ import {
   FiSettings,
   FiLogOut,
   FiPlus,
-  FiBookmark
+  FiBookmark,
+  FiEdit,
 } from "react-icons/fi";
 import { RiMessengerLine } from "react-icons/ri";
 import { Link } from "react-router-dom";
@@ -41,7 +42,7 @@ const Sidebar = () => {
   const [userData, setUserData] = useState({
     profileImg: "",
     username: "",
-    token: ""
+    token: "",
   });
 
   useEffect(() => {
@@ -84,9 +85,9 @@ const Sidebar = () => {
     },
     {
       id: 4,
-      name: "Settings",
-      to: "/setting",
-      icon: <FiSettings className="text-xl" />,
+      name: "Edit Profile",
+      to: "/edit-profile",
+      icon: <FiEdit className="text-xl" />,
     },
   ];
 
@@ -148,7 +149,7 @@ const Sidebar = () => {
       </div>
 
       {openPostForm && (
-        <PostForm closePostForm={() => setOpenPostForm(false)}  />
+        <PostForm closePostForm={() => setOpenPostForm(false)} />
       )}
     </div>
   );

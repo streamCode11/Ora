@@ -73,7 +73,7 @@ const Navbar = () => {
               </span>
             </button>
             {
-              openNotification ? <NotificationList/> : null
+              openNotification ? <NotificationList closeNotification={() => setOpenNotification(false)}/> : null
             }
 
             <div className="relative ml-2">

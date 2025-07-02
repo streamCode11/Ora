@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import validator from "email-validator";
+import OraMainImage from "../../Client/src/assets/Ora favicon.png"
 import { JWT_SECRET , CLIENT_URL } from "../config/cloudinary.js";
 import pwd from "password-validator";
 import { AWSSES } from "../config/awsses.js";
@@ -27,8 +28,8 @@ pschema
 
 const preSignup = async (req, res) => {
   try {
-    const { email, password, username } = req.body;
-    if (!email || !password || !username) {
+    const { email, password, username , fullName } = req.body;
+    if (!email || !password || !username || !fullName) {
       return res.json({
         ok: false,
         error: "Please provide both fields",
@@ -66,7 +67,7 @@ const preSignup = async (req, res) => {
       });
     }
 
-    const token = jwt.sign({ email, password, username }, JWT_SECRET, {
+    const token = jwt.sign({ email, password, username , fullName }, JWT_SECRET, {
       expiresIn: "6h",
     });
 
@@ -75,9 +76,11 @@ const preSignup = async (req, res) => {
         email,
         ` Signup - Verification Link `,
         `
+                <img src=${OraMainImage}   />
                 <h2>  Ora Register Page   </h2>
                 <p>Please click on below link to complete the  
                 signup process </p>
+
 
                 <a href="${CLIENT_URL}/${token}"> Create Account   </a>
 
@@ -118,12 +121,12 @@ const signup = async (req, res) => {
       });
     }
     const token = req.body.token;
-    const { email, password, username } = jwt.verify(
+    const { email, password, username , fullName } = jwt.verify(
       token,
       JWT_SECRET
     );
 
-    if (!email || !password || !username) {
+    if (!email || !password || !username || !fullName) {
       return res.json({
         ok: false,
         error: "Please provide both fields",
@@ -168,6 +171,7 @@ const signup = async (req, res) => {
       email,
       password: hashedpassword,
       username: username,
+      fullName:fullName
     }).save();
     console.log(newUser);
 
@@ -186,7 +190,7 @@ const signup = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const {  email, password } = req.body;
+    const {  email, password , username } = req.body;
 
     if (!email  || !password) {
       return res.json({
@@ -252,26 +256,6 @@ const Logout = async (req, res) => {
     })
   }
 }
-const refreshToken = async (req, res) => {
-  const { refreshToken } = req.body;
-
-  if (!refreshToken) {
-    return res.status(401).json({ message: 'Refresh token required' });
-  }
-
-  try {
-    const decoded = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET);
-    const user = await User.findById(decoded.id);
-    
-    const newToken = generateToken(user._id); // Your existing token generation function
-    
-    res.json({ 
-      token: newToken 
-    });
-  } catch (error) {
-    res.status(403).json({ message: 'Invalid refresh token' });
-  }
-};
 
 
 

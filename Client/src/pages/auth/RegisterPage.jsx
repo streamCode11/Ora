@@ -11,6 +11,7 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName , setfullName] = useState('')
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -27,6 +28,7 @@ const Register = () => {
     try {
       const { data } = await axios.post(`${Apis.auth}/pre-signup`, {
         username,
+        fullName,
         email,
         password,
       });
@@ -37,6 +39,7 @@ const Register = () => {
         setRegistrationSuccess(true);
         setEmail('');
         setUsername('');
+        setfullName('')
         setPassword('');
       }
     } catch (err) {
@@ -56,6 +59,17 @@ const Register = () => {
         </div>
       <form onSubmit={handleFormSubmit}>
           <div className="flex flex-col space-y-4 mt-6">
+            <div>
+              <label htmlFor="fullName" className="sr-only">FullName</label>
+              <input
+                id="fullName"
+                type="text"
+                placeholder="FullName"
+                value={fullName}
+                onChange={(e) => setfullName(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg bg-midGray outline-none text-skin border-none"
+              />
+            </div>
             <div>
               <label htmlFor="username" className="sr-only">Username</label>
               <input
