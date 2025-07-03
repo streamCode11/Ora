@@ -1,4 +1,5 @@
 import User from "../models/authSchema.js";
+import cloudinary from "../config/cloudinaryMain.js";
 
 const UpdateUserProfile = async (req, res) => {
   try {
@@ -11,11 +12,16 @@ const UpdateUserProfile = async (req, res) => {
     }
     
     const { username, firstName, lastName, bio, profileImg } = req.body;
+
+    if (profileImg) {
+      const uploadResponseImage = await cloudinary.uploader.upload(profileImg);
+      user.profileImg = uploadResponseImage.secure_url;
+    }
+
     user.username = username || user.username;
     user.firstName = firstName || user.firstName;
     user.lastName = lastName || user.lastName;
     user.bio = bio || user.bio;
-    user.profileImg = profileImg || user.profileImg;
     
     const updatedUser = await user.save();
 
@@ -37,7 +43,10 @@ const UpdateUserProfile = async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ 
+      message: "Internal server error",
+      error: error.message 
+    });
   }
 };
 

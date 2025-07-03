@@ -1,8 +1,7 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import validator from "email-validator";
-import OraMainImage from "../../Client/src/assets/Ora favicon.png"
-import { JWT_SECRET , CLIENT_URL } from "../config/cloudinary.js";
+import { JWT_SECRET, CLIENT_URL } from "../config/cloudinary.js";
 import pwd from "password-validator";
 import { AWSSES } from "../config/awsses.js";
 import User from "../models/authSchema.js";
@@ -28,7 +27,7 @@ pschema
 
 const preSignup = async (req, res) => {
   try {
-    const { email, password, username , fullName } = req.body;
+    const { email, password, username, fullName } = req.body;
     if (!email || !password || !username || !fullName) {
       return res.json({
         ok: false,
@@ -67,16 +66,19 @@ const preSignup = async (req, res) => {
       });
     }
 
-    const token = jwt.sign({ email, password, username , fullName }, JWT_SECRET, {
-      expiresIn: "6h",
-    });
+    const token = jwt.sign(
+      { email, password, username, fullName },
+      JWT_SECRET,
+      {
+        expiresIn: "6h",
+      }
+    );
 
     AWSSES.sendEmail(
       EmailTemplate(
         email,
         ` Signup - Verification Link `,
         `
-                <img src=${OraMainImage}   />
                 <h2>  Ora Register Page   </h2>
                 <p>Please click on below link to complete the  
                 signup process </p>
@@ -114,17 +116,22 @@ const preSignup = async (req, res) => {
 
 const signup = async (req, res) => {
   try {
-    if(!req.body.token){
+    if (!req.body.token) {
       return res.json({
         ok: false,
         error: "Please provide token in request body",
       });
     }
     const token = req.body.token;
-    const { email, password, username , fullName } = jwt.verify(
+    const { email, password, username, fullName } = jwt.verify(
       token,
       JWT_SECRET
     );
+    res.cookie("jwt", token, {
+      expiresIn: 7 * 24 * 60 * 60 * 1000,
+      httpOnly: true,
+      sameSite: "strict",
+    });
 
     if (!email || !password || !username || !fullName) {
       return res.json({
@@ -171,7 +178,7 @@ const signup = async (req, res) => {
       email,
       password: hashedpassword,
       username: username,
-      fullName:fullName
+      fullName: fullName,
     }).save();
     console.log(newUser);
 
@@ -190,9 +197,9 @@ const signup = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const {  email, password , username } = req.body;
+    const { email, password, username } = req.body;
 
-    if (!email  || !password) {
+    if (!email || !password) {
       return res.json({
         ok: false,
         error: "Please provide both fields",
@@ -218,7 +225,10 @@ const login = async (req, res) => {
         error: "User not found with this email",
       });
     }
-    const isPasswordMatched = await bcrypt.compare(password, EmailName.password);
+    const isPasswordMatched = await bcrypt.compare(
+      password,
+      EmailName.password
+    );
     if (!isPasswordMatched) {
       return res.json({
         ok: false,
@@ -237,7 +247,7 @@ const login = async (req, res) => {
 let blacklistToken = [];
 const Logout = async (req, res) => {
   let token = req.headers.authorization.split(" ")[1];
-  try{
+  try {
     if (!token) {
       return res.json({
         ok: false,
@@ -249,14 +259,13 @@ const Logout = async (req, res) => {
       ok: true,
       message: "You have been logged out successfully",
     });
-  }catch(err){
+  } catch (err) {
     return res.json({
       ok: false,
       error: err.message,
-    })
+    });
   }
-}
+};
 
 
-
-export { preSignup, signup, login , Logout };
+export { preSignup, signup, login, Logout,  };

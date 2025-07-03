@@ -33,6 +33,7 @@ const userSchema = new Schema(
     },
     profileImg: {
       type: String,
+      default:""
     },
     date: {
       type: Date,
