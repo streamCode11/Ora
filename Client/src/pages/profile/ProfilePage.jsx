@@ -8,6 +8,7 @@ import {
 } from 'react-icons/fi';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import LoaderCom from '../../components/common/Loader';
 
 const ProfilePage = () => {
   const { id } = useParams();
@@ -122,16 +123,7 @@ const ProfilePage = () => {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8 text-text">
-        <div className="animate-pulse flex flex-col md:flex-row gap-8">
-          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gray-700"></div>
-          <div className="flex-1 space-y-4">
-            <div className="h-8 w-1/3 bg-gray-700 rounded"></div>
-            <div className="h-4 w-full bg-gray-700 rounded"></div>
-            <div className="h-4 w-2/3 bg-gray-700 rounded"></div>
-          </div>
-        </div>
-      </div>
+     <LoaderCom/>
     );
   }
 

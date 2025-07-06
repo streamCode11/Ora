@@ -74,7 +74,7 @@ const Sidebar = () => {
     {
       id: 2,
       name: "Messages",
-      to: "/message",
+      to: "/chat",
       icon: <RiMessengerLine className="text-xl" />,
     },
     {

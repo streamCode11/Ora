@@ -1,4 +1,4 @@
-import React, { useState , useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiSearch,
   FiHome,
@@ -15,19 +15,19 @@ import Dropdown from "./Dropdown";
 import PostForm from "../posts/PostForm";
 import Apis from "../../config/apis";
 import NotificationList from "../ui/NotificationList";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const [isPostFormOpen, setIsPostFormOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [openNotification , setOpenNotification] = useState(false);
+  const [openNotification, setOpenNotification] = useState(false);
   const [userData, setUserData] = useState({
     profileImg: "",
     username: "",
     firstName: "",
-    token: ""
+    token: "",
   });
 
-  
   useEffect(() => {
     try {
       const authdata = JSON.parse(localStorage.getItem("auth"));
@@ -42,8 +42,8 @@ const Navbar = () => {
   }, []);
 
   const handleOpenNotification = () => {
-      setOpenNotification(true)
-  }
+    setOpenNotification(true);
+  };
   return (
     <div className="fixed w-[calc(100vw-280px)] h-22 top-0 left-70 z-10 bg-white flex items-center justify-between ">
       <div className=" mx-auto px-4  w-full">
@@ -60,21 +60,27 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-2 min-w-[180px] justify-end">
-            <button className="p-2 rounded-lg bg-gray text-mindaro relative" onClick={handleOpenNotification}>
-              <RiMessengerLine size={26} />
-              <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-red-500"></span>
-            </button>
+            <Link to="/chat">
+              <button className="p-2 rounded-lg bg-gray text-mindaro relative">
+                <RiMessengerLine size={26} />
+                <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-mindaro"></span>
+              </button>
+            </Link>
 
-            <button className="p-2 rounded-lg bg-gray text-mindaro relative"
-            onClick={handleOpenNotification}>
+            <button
+              className="p-2 rounded-lg bg-gray text-mindaro relative"
+              onClick={handleOpenNotification}
+            >
               <IoMdNotificationsOutline size={26} />
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-mindaro text-xs text-gray">
                 3
               </span>
             </button>
-            {
-              openNotification ? <NotificationList closeNotification={() => setOpenNotification(false)}/> : null
-            }
+            {openNotification ? (
+              <NotificationList
+                closeNotification={() => setOpenNotification(false)}
+              />
+            ) : null}
 
             <div className="relative ml-2">
               <button

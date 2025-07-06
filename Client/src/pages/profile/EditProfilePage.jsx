@@ -1,15 +1,13 @@
-import React, { useState, useRef, useEffect } from "react";
-import axios from "axios";
-import Apis from "../../config/apis";
+import React from 'react'
+import EditProfile from '../../components/profile/EditProfile'
 
-const AccountSettings = () => {
-
-
-
-
-
-
-
+const EditProfilePage = () => {
+  return (
+    <div className='px-10 py-10'>
+      <h1 className='text-4xl text-gray font-bold'>Edit Profile</h1>
+      <EditProfile/>
+    </div>
+  )
 }
 
-export default AccountSettings;
+export default EditProfilePage
