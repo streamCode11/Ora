@@ -101,11 +101,11 @@ const PostForm = ({ closePostForm }) => {
     <div className="fixed inset-0 bg-gray-200 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-gray rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         <div className="border-b border-gray-200 p-4 flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-skin">Create Post</h2>
+          <h2 className="text-xl font-semibold text-mindaro">Create Post</h2>
           <button
             type="button"
             onClick={closePostForm}
-            className="text-skin hover:text-skin p-1 rounded-full hover:bg-midGray"
+            className="text-gray bg-mindaro p-1 rounded-full "
           >
             <FiX size={24} />
           </button>
@@ -127,14 +127,14 @@ const PostForm = ({ closePostForm }) => {
           {links.length > 0 && (
             <div className="mb-4">
               {links.map((link, index) => (
-                <div key={index} className="flex items-center justify-between bg-midGray p-3 rounded-lg mb-2">
+                <div key={index} className="flex items-center justify-between p-3 rounded-lg mb-2">
                   <div className="flex items-center">
-                    <FiExternalLink className="text-skin mr-2" />
+                    <FiExternalLink className="text-mindaro mr-2" />
                     <a 
                       href={link.url} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-skin hover:underline"
+                      className="text-mindaro hover:underline"
                     >
                       {link.name}
                     </a>
@@ -142,7 +142,7 @@ const PostForm = ({ closePostForm }) => {
                   <button
                     type="button"
                     onClick={() => removeLink(index)}
-                    className="text-skin hover:text-red-400"
+                    className="text-gray p-1 rounded-full bg-mindaro flex items-center justify-center"
                   >
                     <FiX size={16} />
                   </button>
@@ -153,20 +153,20 @@ const PostForm = ({ closePostForm }) => {
 
           {media.length > 0 && (
             <div className="mb-4 relative">
-              <div className="relative w-full h-64 rounded-xl overflow-hidden bg-midGray">
+              <div className="relative w-full h-70 rounded-xl overflow-hidden bg-body py-4">
                 {media.length > 1 && (
                   <>
                     <button
                       type="button"
                       onClick={prevMedia}
-                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-gray text-skin bg-opacity-80 p-2 rounded-full shadow-md z-10 hover:bg-opacity-100"
+                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-mindaro text-gray bg-opacity-80 p-2 rounded-full shadow-md z-10 hover:bg-opacity-100"
                     >
                       <FiChevronLeft size={20} />
                     </button>
                     <button
                       type="button"
                       onClick={nextMedia}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-skin bg-gray bg-opacity-80 p-2 rounded-full shadow-md z-10 hover:bg-opacity-100"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray bg-mindaro bg-opacity-80 p-2 rounded-full z-10 hover:bg-opacity-100"
                     >
                       <FiChevronRight size={20} />
                     </button>
@@ -190,9 +190,9 @@ const PostForm = ({ closePostForm }) => {
                 <button
                   type="button"
                   onClick={() => removeMedia(currentMediaIndex)}
-                  className="absolute top-2 right-2 bg-gray bg-opacity-80 p-1 rounded-full shadow-md hover:bg-opacity-100"
+                  className="absolute top-2 right-2 bg-mindaro bg-opacity-80 p-1 rounded-full shadow-md hover:bg-opacity-100"
                 >
-                  <FiX size={16} className="text-skin" />
+                  <FiX size={16} className="text-gray" />
                 </button>
               </div>
 
@@ -204,7 +204,7 @@ const PostForm = ({ closePostForm }) => {
                       type="button"
                       onClick={() => setCurrentMediaIndex(index)}
                       className={`w-2 h-2 rounded-full ${
-                        index === currentMediaIndex ? "bg-skin" : "bg-midGray"
+                        index === currentMediaIndex ? "bg-mindaro" : "bg-body"
                       }`}
                     />
                   ))}
@@ -220,13 +220,13 @@ const PostForm = ({ closePostForm }) => {
                 value={currentLink}
                 onChange={(e) => setCurrentLink(e.target.value)}
                 placeholder="Paste a link..."
-                className="flex-1 p-2 rounded-lg text-skin bg-midGray placeholder-white outline-none border-none"
+                className="flex-1 p-2 rounded-lg bg-gray text-white placeholder-white outline-none border-none"
                 autoFocus
               />
               <button
                 type="button"
                 onClick={handleLinkSubmit}
-                className="bg-midGray text-white px-4 py-2 rounded-lg hover:bg-gray-700"
+                className="bg-mindaro text-gray px-4 py-2 rounded-lg"
               >
                 Add
               </button>
@@ -234,13 +234,13 @@ const PostForm = ({ closePostForm }) => {
           )}
         </div>
 
-        <div className="border-t border-gray-200 p-4">
+        <div className="border-t border-gray p-4">
           <div className="flex justify-between items-center">
             <div className="flex space-x-2">
               <button
                 type="button"
                 onClick={() => fileInputRef.current.click()}
-                className="p-2 text-skin hover:text-skin hover:bg-midGray rounded-full"
+                className="p-2 text-gray bg-mindaro rounded-full"
                 title="Add photos/videos"
               >
                 <FiImage size={20} />
@@ -259,8 +259,8 @@ const PostForm = ({ closePostForm }) => {
                 onClick={() => setShowLinkInput(!showLinkInput)}
                 className={`p-2 rounded-full ${
                   showLinkInput
-                    ? "text-skin bg-midGray"
-                    : "text-skin hover:text-skin hover:bg-midGray"
+                    ? "text-gray bg-mindaro"
+                    : "text-gray bg-mindaro hover:text-skin hover:bg-midGray"
                 }`}
                 title="Add link"
               >

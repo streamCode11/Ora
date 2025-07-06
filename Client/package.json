@@ -17,6 +17,7 @@
     "emoji-picker-react": "^4.12.2",
     "formik": "^2.4.6",
     "framer-motion": "^12.17.0",
+    "lucide-react": "^0.525.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-helmet": "^6.1.0",
@@ -28,7 +29,8 @@
     "react-router-dom": "^7.6.2",
     "react-toastify": "^11.0.5",
     "tailwindcss": "^4.1.9",
-    "yup": "^1.6.1"
+    "yup": "^1.6.1",
+    "zustand": "^5.0.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
@@ -42,4 +44,3 @@
     "vite": "^6.3.5"
   }
 }
-

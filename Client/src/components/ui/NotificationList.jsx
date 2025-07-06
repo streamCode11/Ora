@@ -6,8 +6,8 @@ const NotificationList = ({ notifications = [] , closeNotification }) => {
     <div className="">
         <div className="absolute right-10 top-20  w-90 bg-gray shadow-lg rounded-lg p-4 z-50">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-skin mb-2">Notifications</h3>
-          <div className="flex justify-center items-center bg-midGray text-skin p-2 rounded-full"
+          <h3 className="font-semibold text-mindaro mb-2">Notifications</h3>
+          <div className="flex justify-center items-center bg-mindaro text-gray p-2 rounded-full"
           onClick={closeNotification}>
               <FiX className="justify-center items-center flex"/>
           </div>

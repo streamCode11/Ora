@@ -33,7 +33,7 @@ const userSchema = new Schema(
     },
     profileImg: {
       type: String,
-      default:""
+      default:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXIdvC1Q4WL7_zA6cJm3yileyBT2OsWhBb9Q&s"
     },
     date: {
       type: Date,

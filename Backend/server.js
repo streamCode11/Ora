@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import authRouter from "./routes/authRoutes.js";
 import commentRoutes from './routes/commentRoutes.js';
 import PostRoutes from "./routes/postRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
 import http from 'http';
 import { Server } from 'socket.io';
 
@@ -32,6 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(`${pre}/comments`, commentRoutes);
 app.use(`${pre}/posts`, PostRoutes);
 app.use(`${pre}/auth`, authRouter);
+app.use(`${pre}/messages` , messageRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

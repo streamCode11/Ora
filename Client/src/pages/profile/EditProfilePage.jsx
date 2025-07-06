@@ -1,11 +1,15 @@
-import React from 'react'
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import Apis from "../../config/apis";
 
-const EditProfilePage = () => {
-  return (
-    <div>
-      
-    </div>
-  )
+const AccountSettings = () => {
+
+
+
+
+
+
+
 }
 
-export default EditProfilePage
+export default AccountSettings;

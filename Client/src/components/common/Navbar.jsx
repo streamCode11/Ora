@@ -45,27 +45,27 @@ const Navbar = () => {
       setOpenNotification(true)
   }
   return (
-    <div className="fixed w-[calc(100vw-280px)] top-0 left-70 z-50 bg-gray  border-b ">
-      <div className=" mx-auto px-4">
+    <div className="fixed w-[calc(100vw-280px)] h-22 top-0 left-70 z-10 bg-white flex items-center justify-between ">
+      <div className=" mx-auto px-4  w-full">
         <div className="flex justify-between h-19 items-center">
-          <div className="flex items-center space-x-2 min-w-[180px] max-w-auto">
-            <div className="hidden md:flex items-center text-white bg-midGray rounded-lg px-4 py-3 ml-2">
-              <FiSearch className="h-5 w-5 text-white" />
+          <div className="flex items-center gap-2 min-w-[180px] max-w-auto">
+            <div className="hidden h-15 md:flex items-center text-gray bg-body rounded-lg px-4  ml-2">
+              <FiSearch className="h-5 w-5 text-gray" />
               <input
                 type="text"
-                className="ml-2 bg-transparent border-none focus:outline-none placeholder-white text-sm w-[370px]"
+                className="ml-2 bg-transparent border-none focus:outline-none placeholder-gray text-sm w-[370px]"
                 placeholder="Search People"
               />
             </div>
           </div>
 
           <div className="flex items-center space-x-2 min-w-[180px] justify-end">
-            <button className="p-2 rounded-lg bg-midGray text-skin relative" onClick={handleOpenNotification}>
+            <button className="p-2 rounded-lg bg-gray text-mindaro relative" onClick={handleOpenNotification}>
               <RiMessengerLine size={26} />
               <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-red-500"></span>
             </button>
 
-            <button className="p-2 rounded-lg bg-midGray text-skin relative"
+            <button className="p-2 rounded-lg bg-gray text-mindaro relative"
             onClick={handleOpenNotification}>
               <IoMdNotificationsOutline size={26} />
               <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">

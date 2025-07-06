@@ -92,18 +92,17 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="h-screen w-70 flex flex-col justify-between py-3 bg-gray shadow-sm">
+    <div className="h-screen w-70 flex flex-col justify-between py-3 bg-white ">
       <div className="flex flex-col px-4 space-y-1">
-        <div className="h-19 w-auto">
+        <div className="ml-5 mb-10 h-19 w-auto">
           <img src={webLogo} className="h-full w-auto" alt="Website Logo" />
         </div>
         {navLinks.map((link) => (
           <Link
             key={link.id}
             to={link.to}
-            className="flex items-center px-3 py-3 gap-3 rounded-lg
-                      text-white hover:bg-skin transition-colors
-                      hover:text-slate-700"
+            className="flex items-center px-3 py-3 gap-3 rounded-lg border-2 border-transparent
+                      text-gray transition-all  hover:border-mindaro"
           >
             <span>{link.icon}</span>
             <span className="text-sm font-medium">{link.name}</span>
@@ -112,9 +111,8 @@ const Sidebar = () => {
 
         <button
           onClick={() => setOpenPostForm(true)}
-          className="flex items-center px-3 py-3 gap-3 rounded-lg
-                    text-white hover:bg-skin transition-colors
-                    hover:text-slate-700 mt-2"
+          className="flex items-center px-3 py-3 gap-3 rounded-lg border-2 border-transparent
+                    text-gray  hover:border-mindaro mt-2"
         >
           <FiPlus className="text-xl" />
           <span className="text-sm font-medium">Create Post</span>
@@ -125,14 +123,14 @@ const Sidebar = () => {
         <div className="pt-2">
           <Link
             to="/profile"
-            className="flex items-center gap-3 text-gray-100 px-3 py-2 rounded-lg hover:bg-skin hover:text-slate-700 transition-all"
+            className="flex items-center gap-3 text-gray px-3 py-2  "
           >
             <img
               src={userData.profileImg || "/default-profile.png"}
               alt="Profile"
               className="w-8 h-8 rounded-full object-cover"
             />
-            <span className="text-sm font-medium">
+            <span className="text-sm font-medium ">
               {userData.username || "User"}
             </span>
           </Link>
@@ -140,7 +138,7 @@ const Sidebar = () => {
           <button
             onClick={Logout}
             className="flex items-center w-full px-3 py-2 gap-3 rounded-lg
-                      text-white hover:bg-skin hover:text-slate-700 transition-colors mt-1"
+                      text-gray transition-colors mt-1"
           >
             <FiLogOut className="text-xl" />
             <span className="text-sm font-medium">Log Out</span>

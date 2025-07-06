@@ -31,7 +31,7 @@ const defaultuser = [
    ];
 const Suggestion = () => {
   return (
-     <div className="mt-4 mb-6 w-85 min-h-30 max-h-auto bg-gray rounded-lg py-4 px-3">
+     <div className="mt-4 mb-6 w-85 min-h-30 max-h-auto bg-white rounded-lg py-4 px-3">
      <h2 className="text-skin text-xl capitalize">suggestion for you</h2>
      <ul className="mt-4 flex flex-col space-y-4">
        {defaultuser.map((user) => (
@@ -46,10 +46,10 @@ const Suggestion = () => {
                className="w-12 h-12 rounded-full mr-3 object-cover"
              />
              <div>
-               <h3 className="text-[16px] font-normal text-white">
+               <h3 className="text-[16px] font-normal text-gray">
                  {user.name}
                </h3>
-               <p className="text-sm text-gray-300">@{user.username}</p>
+               <p className="text-sm text-gray-600">@{user.username}</p>
              </div>
            </li>
            <Button name="Follow" />

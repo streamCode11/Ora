@@ -16,7 +16,7 @@ const Dropdown = ({ closeDrop }) => {
       <div className="flex justify-end p-2">
         <button 
           onClick={closeDrop}
-          className="p-1 rounded-full hover:bg-midGray transition-colors text-skin"
+          className="p-1 rounded-full  transition-colors text-mindaro"
           aria-label="Close menu"
         >
           <FiX className="text-xl" />

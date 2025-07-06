@@ -268,4 +268,4 @@ const Logout = async (req, res) => {
 };
 
 
-export { preSignup, signup, login, Logout,  };
+export { preSignup, signup, login, Logout };
