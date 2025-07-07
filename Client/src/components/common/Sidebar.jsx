@@ -54,7 +54,7 @@ const Sidebar = () => {
         });
       }
     } catch (error) {
-      console.error("Error parsing auth data:", error);
+      console.log("Error parsing auth data:", error);
     }
   }, []);
 
@@ -147,7 +147,8 @@ const Sidebar = () => {
       </div>
 
       {openPostForm && (
-        <PostForm closePostForm={() => setOpenPostForm(false)} />
+        <PostForm closePostForm={() => setOpenPostForm(false)} 
+        />
       )}
     </div>
   );

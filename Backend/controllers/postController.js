@@ -37,39 +37,44 @@ const upload = multer({
 const uploadPostMedia = upload.array("media", 10);
 
 const uploadMedia = async (req, res) => {
-  try {
-    console.log('Uploading media...'); // Debug log
-    console.log('Files:', req.files); // Debug log
-    console.log('Body:', req.body); // Debug log
-
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ message: "No files uploaded" });
-    }
-
-    const mediaFiles = req.files.map(file => ({
-      url: `/uploads/posts/${file.filename}`,
-      type: file.mimetype.startsWith('image/') ? 'image' : 'video'
-    }));
-
-    const post = await Post.create({
-      user: req.user.id,
-      media: mediaFiles,
-      caption: req.body.caption,
-      settings: req.body.settings || {
-        hideLikeCount: false,
-        disableComments: false
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
       }
-    });
-
-    res.status(201).json(post);
-  } catch (err) {
-    console.error('Post creation error:', err);
-    res.status(500).json({ 
-      message: 'Failed to create post',
-      error: err.message 
-    });
-  }
-};
+  
+      const mediaFiles = [];
+      
+      if (req.files && req.files.length > 0) {
+        req.files.forEach(file => {
+          mediaFiles.push({
+            url: `/uploads/posts/${file.filename}`,
+            type: file.mimetype.startsWith('image/') ? 'image' : 'video'
+          });
+        });
+      }
+  
+      const post = await Post.create({
+        user: req.user._id,  
+        media: mediaFiles,
+        caption: req.body.caption || '',
+        settings: req.body.settings || {
+          hideLikeCount: false,
+          disableComments: false
+        }
+      });
+  
+      const populatedPost = await Post.findById(post._id)
+        .populate('user', 'username firstName lastName avatar');
+  
+      res.status(201).json(populatedPost);
+    } catch (err) {
+      console.error('Post creation error:', err);
+      res.status(500).json({ 
+        message: 'Failed to create post',
+        error: err.message 
+      });
+    }
+  };
 
 
 
