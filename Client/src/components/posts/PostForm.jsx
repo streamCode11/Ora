@@ -373,12 +373,12 @@ const PostForm = ({ closePostForm, onPostCreated }) => {
         </form>
 
         {/* Footer Actions */}
-        <div className="border-t border-gray-600 p-4 flex items-center justify-between bg-gray-800">
+        <div className="border-t border-gray-600 p-4 flex items-center justify-between bg-gray">
           <div className="flex space-x-2">
             <button
               type="button"
               onClick={() => fileInputRef.current.click()}
-              className="p-2 text-gray-800 bg-mindaro rounded-full hover:bg-opacity-80 disabled:opacity-50"
+              className="p-2 text-gray bg-mindaro rounded-full hover:bg-opacity-80 disabled:opacity-50"
               title="Add photos/videos"
               disabled={isLoading}
             >
