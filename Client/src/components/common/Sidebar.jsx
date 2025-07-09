@@ -14,6 +14,7 @@ import webLogo from "../../assets/Ora bg.png";
 import Apis from "../../config/apis";
 import axios from "axios";
 import PostForm from "../posts/PostForm";
+import { useAuth } from "../../context/auth";
 
 const Logout = async () => {
   try {
@@ -39,6 +40,8 @@ const Logout = async () => {
 
 const Sidebar = () => {
   const [openPostForm, setOpenPostForm] = useState(false);
+  const [auth] = useAuth();
+  const [posts, setPosts] = useState([]);
   const [userData, setUserData] = useState({
     profileImg: "",
     username: "",
@@ -57,7 +60,10 @@ const Sidebar = () => {
       console.log("Error parsing auth data:", error);
     }
   }, []);
-
+  const handlePostCreated = (newPost) => {
+    setPosts(prevPosts => [newPost, ...prevPosts]);
+    setOpenPostForm(false);
+  };
   const navLinks = [
     {
       id: 0,
@@ -148,6 +154,7 @@ const Sidebar = () => {
 
       {openPostForm && (
         <PostForm closePostForm={() => setOpenPostForm(false)} 
+        onPostCreated={handlePostCreated} 
         />
       )}
     </div>

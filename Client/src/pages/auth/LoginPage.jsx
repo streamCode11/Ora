@@ -5,6 +5,7 @@ import webLogo from '../../assets/Ora bg.png';
 import axios from 'axios';
 import Apis from '../../config/apis';
 import { useAuth } from '../../context/auth';
+import LoaderCom from '../../components/common/Loader';
 
 const LoginPage = () => {
   const [inputType, setInputType] = useState('password');
@@ -62,8 +63,11 @@ const LoginPage = () => {
       localStorage.setItem('auth', JSON.stringify(authData));
       setAuth(authData);
 
-      const redirectTo = location.state?.from?.pathname || '/';
-      navigate(redirectTo, { replace: true });
+      // Show loader for a brief moment before redirecting
+      setTimeout(() => {
+        const redirectTo = location.state?.from?.pathname || '/';
+        navigate(redirectTo, { replace: true });
+      }, 2000); // 1 second delay to ensure loader is visible
 
     } catch (err) {
       console.error('Login error:', err);
@@ -71,10 +75,18 @@ const LoginPage = () => {
                          err.message || 
                          'Login failed. Please try again.';
       setError(errorMessage);
-    } finally {
       setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <LoaderCom /> {/* Your custom loader component */}
+        <p className="ml-2">Logging you in...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-body h-screen flex items-center justify-center">
@@ -140,7 +152,7 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gray text-mindaro px-4 py-2 rounded-lg   cursor-pointer disabled:opacity-70"
+              className="w-full bg-gray text-mindaro px-4 py-2 rounded-lg cursor-pointer disabled:opacity-70"
             >
               {loading ? 'Logging in...' : 'Login'}
             </button>

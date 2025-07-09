@@ -100,4 +100,60 @@ const getMyProfile = async (req, res) => {
   }
 };
 
-export { UpdateUserProfile, getUserProfile, getMyProfile };
+const getAllUser = async (req, res) => {
+  try {
+    const users = await User.find().select('-password -__v');
+    return res.json({
+      users,
+    });
+  } catch(err) {
+    return res.json({
+      message: err.message,
+    });
+  }
+};
+
+const searchUser = async (req, res) => {
+  const { query } = req.query;
+  
+  if (!query || query.trim().length < 2) {
+    return res.status(400).json({
+      success: false,
+      message: "Search query must be at least 2 characters long"
+    });
+  }
+
+  try {
+    const searchQuery = {
+      $or: [
+        { username: { $regex: query, $options: "i" } },
+        { firstName: { $regex: query, $options: "i" } },
+        { lastName: { $regex: query, $options: "i" } }
+      ]
+    };
+
+    const users = await User.find(searchQuery)
+      .select("-password -__v -email -updatedAt")
+      .limit(10)
+      .lean();
+
+    res.json({
+      success: true,
+      users
+    });
+  } catch (error) {
+    console.error("Search error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error during search"
+    });
+  }
+};
+
+export { 
+  UpdateUserProfile, 
+  getUserProfile, 
+  getMyProfile, 
+  getAllUser, 
+  searchUser 
+};

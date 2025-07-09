@@ -53,7 +53,7 @@ const LoaderCom = () => {
           initial={{ pathLength: 1.1, pathOffset: 1 }}
           style={{ rotate: -90 }}
           d="m 70.884863,14.506375 q 0,4.090915 2.68661,6.727635 2.671,2.63674 6.16987,2.63674 3.79561,0 6.40412,-2.68469 2.60851,-2.71661 2.60851,-6.615766 0,-3.947096 -2.57725,-6.6157808 -2.56168,-2.6846671 -6.34167,-2.6846671 -3.76439,0 -6.35729,2.6846671 -2.5929,2.6527048 -2.5929,6.5518618 z"
-          stroke="#f1f2ee" // Added stroke color
+          stroke="#dcf763" // Added stroke color
           strokeWidth="1" // Added stroke width
           fill="none" // Ensure path is not filled
         />

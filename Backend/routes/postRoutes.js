@@ -1,22 +1,27 @@
 import express from "express";
-const PostRoutes = express.Router();
-import * as post from "../controllers/postController.js";
-import { protect } from "../middleware/auth.js";
+import {
+  createPost,
+  getPosts,
+  getPost,
+  updatePost,
+  deletePost,
+  toggleLike,
+  getPostsByUserId,
+  getPublicUserProfile
+} from "../controllers/postController.js";
+import multer from "multer";
 
-PostRoutes
-  .route("/")
-  .post(protect, post.uploadPostMedia, post.uploadMedia)
-  .get(post.getAllPosts);
+const postRouter = express.Router();
+const upload = multer({ dest: 'uploads/' }); 
 
-PostRoutes
-  .route("/user")
-  .get(protect, post.getPostsByUserId); 
+postRouter.post("/upload", upload.array('images', 10), createPost); 
+postRouter.get("/", getPosts);
+postRouter.get("/:id", getPost);
+postRouter.put("/:id", updatePost);
+postRouter.delete("/:id", deletePost);
+postRouter.post("/:id/like", toggleLike);
+postRouter.get("/users/:userId", getPostsByUserId);
+postRouter.get('/public/:userId', getPublicUserProfile);
 
-PostRoutes
-  .route("/:id")
-  .delete(protect, post.deletePost);
 
-PostRoutes
-  .post("/:id/like", protect, post.likePost);
-
-export default PostRoutes;
+export default postRouter;

@@ -1,176 +1,200 @@
-import fs from 'fs';
+import cloudinary from "../config/cloudinaryMain.js";
+import User from "../models/authSchema.js";
 import Post from "../models/postSchema.js";
-import multer from "multer";
-import path from 'path';
-import { v4 as uuidv4 } from "uuid";
 
+// Create a new post with images
+// Create a new post with images
+export const createPost = async (req, res) => {
+  try {
+    const { caption, settings, userId } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
 
-const uploadDir = './uploads/posts';
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "At least one image is required" });
+    }
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${uuidv4()}${ext}`);
-  },
-});
+    const imageUploads = req.files.map(file => 
+      cloudinary.uploader.upload(file.path)
+    );
+    
+    const uploadedImages = await Promise.all(imageUploads);
+    const imageUrls = uploadedImages.map(img => img.secure_url);
 
-const fileFilter = (req, file, cb) => {  
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only images are accepted"), false);
+    const newPost = new Post({
+      user: userId,
+      caption,
+      images: imageUrls,
+      settings: settings || {
+        hideLikeCount: false,
+        disableComments: false,
+      },
+    });
+
+    const savedPost = await newPost.save();
+    
+    // Update user's posts array
+    await User.findByIdAndUpdate(userId, {
+      $push: { posts: savedPost._id }
+    });
+
+    res.status(201).json(savedPost);
+  } catch (err) {
+    console.log("Error creating post:", err);
+    res.status(500).json({ message: "Failed to create post" });
   }
 };
 
-const upload = multer({
-  storage,
-  fileFilter,  
-  limits: { fileSize: 10 * 1024 * 1024 },
-});
-
-const uploadPostMedia = upload.array("media", 10);
-
-const uploadMedia = async (req, res) => {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ message: "User not authenticated" });
-      }
-  
-      const mediaFiles = [];
-      
-      if (req.files && req.files.length > 0) {
-        req.files.forEach(file => {
-          mediaFiles.push({
-            url: `/uploads/posts/${file.filename}`,
-            type: file.mimetype.startsWith('image/') ? 'image' : 'video'
-          });
-        });
-      }
-  
-      const post = await Post.create({
-        user: req.user._id,  
-        media: mediaFiles,
-        caption: req.body.caption || '',
-        settings: req.body.settings || {
-          hideLikeCount: false,
-          disableComments: false
-        }
-      });
-  
-      const populatedPost = await Post.findById(post._id)
-        .populate('user', 'username firstName lastName avatar');
-  
-      res.status(201).json(populatedPost);
-    } catch (err) {
-      console.error('Post creation error:', err);
-      res.status(500).json({ 
-        message: 'Failed to create post',
-        error: err.message 
-      });
-    }
-  };
-
-
-
-
-const getAllPosts = async (req, res) => {
+export const getPosts = async (req, res) => {
   try {
     const posts = await Post.find()
-      .populate("user", "username firstName lastName")
+      .populate("user", "username profilePicture")
+      .populate("likes", "username profilePicture")
+      .populate("comments")
       .sort({ createdAt: -1 });
 
-    res.status(200).json({ success: true, data: posts });
+    res.status(200).json(posts);
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error("Error fetching posts:", err);
+    res.status(500).json({ message: "Failed to fetch posts" });
   }
 };
 
-const getPostsByUserId = async (req, res) => {
+// Get a single post by ID
+export const getPost = async (req, res) => {
   try {
-    const posts = await Post.find({ user: req.user.id }) 
-      .populate("user", "username firstName lastName avatar")
+    const posts = await Post.find({ user: req.params.userId })
       .sort({ createdAt: -1 });
-
-    res.status(200).json({
-      success: true,
-      data: posts,
-    });
+    res.json(posts);
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
+    res.status(500).json({ message: err.message });
   }
-};
+}
 
-const deletePost = async (req, res) => {
+// Update a post
+export const updatePost = async (req, res) => {
   try {
-    const { id } = req.params;
-    const post = await Post.findById(id);
-
-    if (!post) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Post not found" });
-    }
-
-    if (post.user.toString() !== req.user.id) {
-      return res
-        .status(403)
-        .json({ success: false, message: "Unauthorized to delete this post" });
-    }
-
-    await post.deleteOne();
-    res.status(200).json({ success: true, message: "Post deleted" });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
-
-const likePost = async (req, res) => {
-  try {
-    const { id } = req.params;
+    const { caption, settings } = req.body;
+    const postId = req.params.id;
     const userId = req.user.id;
 
-    const post = await Post.findById(id);
-
+    const post = await Post.findById(postId);
     if (!post) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Post not found" });
+      return res.status(404).json({ message: "Post not found" });
     }
 
-    const alreadyLiked = post.likes.includes(userId);
+    if (post.user.toString() !== userId) {
+      return res.status(403).json({ message: "You can only update your own posts" });
+    }
 
-    if (alreadyLiked) {
-      post.likes.pull(userId);
-    } else {
+    post.caption = caption || post.caption;
+    
+    if (settings) {
+      post.settings = {
+        hideLikeCount: settings.hideLikeCount !== undefined ? settings.hideLikeCount : post.settings.hideLikeCount,
+        disableComments: settings.disableComments !== undefined ? settings.disableComments : post.settings.disableComments,
+      };
+    }
+
+    const updatedPost = await post.save();
+    res.status(200).json(updatedPost);
+  } catch (err) {
+    console.error("Error updating post:", err);
+    res.status(500).json({ message: "Failed to update post" });
+  }
+};
+
+// Delete a post
+export const deletePost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const userId = req.user.id;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    if (post.user.toString() !== userId) {
+      return res.status(403).json({ message: "You can only delete your own posts" });
+    }
+
+    // Delete images from Cloudinary
+    const deletePromises = post.images.map(imageUrl => {
+      const publicId = imageUrl.split('/').pop().split('.')[0];
+      return cloudinary.uploader.destroy(publicId);
+    });
+
+    await Promise.all(deletePromises);
+    await Post.findByIdAndDelete(postId);
+    
+    res.status(200).json({ message: "Post deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting post:", err);
+    res.status(500).json({ message: "Failed to delete post" });
+  }
+};
+
+// Like/Unlike a post
+export const toggleLike = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const userId = req.user.id;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const likeIndex = post.likes.indexOf(userId);
+    if (likeIndex === -1) {
       post.likes.push(userId);
+    } else {
+      post.likes.splice(likeIndex, 1);
     }
 
     await post.save();
-
-    res.status(200).json({
-      success: true,
-      liked: !alreadyLiked,
-      totalLikes: post.likes.length,
-    });
+    res.status(200).json(post);
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error("Error toggling like:", err);
+    res.status(500).json({ message: "Failed to toggle like" });
   }
 };
 
-export {
-  uploadMedia,
-  uploadPostMedia,
-  getAllPosts,
-  getPostsByUserId,
-  deletePost,
-  likePost,
+// Get posts by a specific user
+// Get posts by user ID
+// Get posts by user ID (no auth required)
+export const getPostsByUserId = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const posts = await Post.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .populate('user', 'username profileImg');
+
+    res.json(posts);
+  } catch (err) {
+    console.error("Error fetching user posts:", err);
+    res.status(500).json({ message: "Failed to fetch user posts" });
+  }
+};
+export const getPublicUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId)
+      .select('-password -email -resetPasswordToken');
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    res.json({ user });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };

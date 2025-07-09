@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import mongoose , { Schema, model } from "mongoose";
 import bcrypt from "bcryptjs";
 
 const userSchema = new Schema(
@@ -9,9 +9,9 @@ const userSchema = new Schema(
       unique: true,
       minlength: 5,
     },
-    fullName:{
-      type:String,
-      required:true,
+    fullName: {
+      type: String,
+      required: true,
     },
     email: {
       type: String,
@@ -33,7 +33,8 @@ const userSchema = new Schema(
     },
     profileImg: {
       type: String,
-      default:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXIdvC1Q4WL7_zA6cJm3yileyBT2OsWhBb9Q&s"
+      default:
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXIdvC1Q4WL7_zA6cJm3yileyBT2OsWhBb9Q&s",
     },
     date: {
       type: Date,
@@ -41,25 +42,25 @@ const userSchema = new Schema(
     },
     posts: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "Post",
       },
     ],
     followers: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "User",
       },
     ],
     following: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "User",
       },
     ],
     savedPosts: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "Post",
       },
     ],

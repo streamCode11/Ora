@@ -15,11 +15,14 @@ import Dropdown from "./Dropdown";
 import PostForm from "../posts/PostForm";
 import Apis from "../../config/apis";
 import NotificationList from "../ui/NotificationList";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import SearchList from "../ui/SearchList";
 
 const Navbar = () => {
   const [isPostFormOpen, setIsPostFormOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showResults, setShowResults] = useState([]);
   const [openNotification, setOpenNotification] = useState(false);
   const [userData, setUserData] = useState({
     profileImg: "",
@@ -27,7 +30,7 @@ const Navbar = () => {
     firstName: "",
     token: "",
   });
-
+  const navigate = useNavigate();
   useEffect(() => {
     try {
       const authdata = JSON.parse(localStorage.getItem("auth"));
@@ -44,6 +47,17 @@ const Navbar = () => {
   const handleOpenNotification = () => {
     setOpenNotification(true);
   };
+
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    setShowResults(value.length > 0);
+  };
+  const handleUserSelect = (userId) => {
+    navigate(`/profile/${userId}`);
+    setSearchTerm("");
+    setShowResults(false);
+  };
   return (
     <div className="fixed w-[calc(100vw-280px)] h-22 top-0 left-70 z-10 bg-white flex items-center justify-between ">
       <div className=" mx-auto px-4  w-full">
@@ -52,11 +66,20 @@ const Navbar = () => {
             <div className="hidden h-15 md:flex items-center text-gray bg-body rounded-lg px-4  ml-2">
               <FiSearch className="h-5 w-5 text-gray" />
               <input
+                onChange={handleSearch}
+                onFocus={() => searchTerm && setShowResults(true)}
+                onBlur={() => setTimeout(() => setShowResults(false), 200)}
+                value={searchTerm}
                 type="text"
                 className="ml-2 bg-transparent border-none focus:outline-none placeholder-gray text-sm w-[370px]"
                 placeholder="Search People"
               />
             </div>
+            {showResults && (
+              <SearchList
+                searchTerm={searchTerm}
+              />
+            )}
           </div>
 
           <div className="flex items-center space-x-2 min-w-[180px] justify-end">

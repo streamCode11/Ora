@@ -3,31 +3,22 @@ import { Link, useParams } from 'react-router-dom';
 import PostGrid from '../../components/common/Postgrid';
 import { 
   FiEdit, FiSettings, FiUserPlus, FiGrid, 
-  FiBookmark, FiHeart, FiMessageSquare,
-  FiChevronLeft, FiChevronRight, FiX
+  FiBookmark
 } from 'react-icons/fi';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import LoaderCom from '../../components/common/Loader';
+import Apis from '../../config/apis';
 
 const ProfilePage = () => {
-  const { id } = useParams();
   const [currentUser, setCurrentUser] = useState(null);
-  const [profileUser, setProfileUser] = useState({
-    _id: '',
-    username: '',
-    profileImg: '',
-    bio: '',
-    followers: [],
-    following: [],
-    createdAt: '',
-    posts: []
-  });
+  const [profileUser, setProfileUser] = useState(null);
+  const [userPosts, setUserPosts] = useState([]);
   const [activeTab, setActiveTab] = useState('posts');
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState(null);
-  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+  const { id } = useParams();
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -35,30 +26,45 @@ const ProfilePage = () => {
         setLoading(true);
         const authData = JSON.parse(localStorage.getItem("auth"));
         
-        if (authData) {
-          setCurrentUser(authData.user);
-          
-          if (!id || id === authData.user._id) {
-            setProfileUser({
-              ...authData.user,
-              followers: authData.user.followers || [],
-              following: authData.user.following || [],
-              posts: authData.user.posts || []
-            });
-            setIsFollowing(false); 
-          } else {
-            const response = await axios.get(`/api/v1/auth/${id}`, {
-              headers: {
-                'x-auth-token': authData.token
-              }
-            });
-            setProfileUser(response.data.user);
-            setIsFollowing(authData.user.following.includes(id));
+        if (!authData) {
+          toast.error('Please login to view profiles');
+          return;
+        }
+
+        setCurrentUser(authData.user);
+        const userIdToFetch = id || authData.user._id;
+        
+        // Fetch user profile data
+        const userResponse = await axios.get(`${Apis.auth}/${userIdToFetch}`, {
+          headers: {
+            'x-auth-token': authData.token
           }
+        });
+        
+        setProfileUser(userResponse.data.user);
+        
+        // Check if current user is following this profile
+        if (id && id !== authData.user._id) {
+          setIsFollowing(authData.user.following?.includes(id) || false);
+        }
+        
+        // Fetch user's posts data if they have any
+        if (userResponse.data.user.posts?.length > 0) {
+          const postsResponse = await axios.get(`${Apis.base}/posts`, {
+            params: {
+              ids: userResponse.data.user.posts.join(',')
+            },
+            headers: {
+              'x-auth-token': authData.token
+            }
+          });
+          setUserPosts(postsResponse.data || []);
+        } else {
+          setUserPosts([]);
         }
       } catch (err) {
-        console.error('Error fetching profile data:', err);
-        toast.error('Failed to load profile data');
+        console.log('Error fetching profile data:', err);
+        toast.error(err.response?.data?.message || 'Failed to load profile data');
       } finally {
         setLoading(false);
       }
@@ -68,6 +74,7 @@ const ProfilePage = () => {
   }, [id]);
 
   const formatDate = (dateString) => {
+    if (!dateString) return "Unknown date";
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
   };
@@ -120,44 +127,29 @@ const ProfilePage = () => {
     }
   };
 
-
-  if (loading) {
-    return (
-     <LoaderCom/>
-    );
+  if (loading || !profileUser) {
+    return <LoaderCom/>;
   }
 
   const isOwnProfile = currentUser?._id === profileUser._id;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 text-white">
-      {selectedPost && (
-        <PostModal 
-          post={selectedPost} 
-          onClose={() => setSelectedPost(null)} 
-        />
-      )}
-
-    <div className="max-w-4xl mx-auto px-4 py-8 text-white">
-      {selectedPost && (
-        <PostModal 
-          post={selectedPost} 
-          onClose={() => setSelectedPost(null)} 
-        />
-      )}
-
       <div className="flex flex-col md:flex-row items-center gap-8 mb-8">
         <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-gray shadow-lg">
           <img 
             src={profileUser.profileImg || "https://picsum.photos/200/200?random=1"} 
             alt={profileUser.username} 
             className="w-full h-full object-cover"
+            onError={(e) => {
+              e.target.src = "https://picsum.photos/200/200?random=1";
+            }}
           />
         </div>
         
         <div className="flex-1 text-center md:text-left">
           <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
-            <h1 className=" text-gray text-2xl font-bold">@{profileUser.username}</h1>
+            <h1 className="text-gray text-2xl font-bold">@{profileUser.username}</h1>
             <div className="flex gap-2 justify-center md:justify-start">
               {isOwnProfile ? (
                 <>
@@ -186,7 +178,7 @@ const ProfilePage = () => {
           
           <div className="flex justify-center md:justify-start gap-8 mb-4">
             <div className="text-center">
-              <span className="font-bold text-gray block">{profileUser.posts?.length || 0}</span>
+              <span className="font-bold text-gray block">{userPosts.length}</span>
               <span className="text-gray-400">Posts</span>
             </div>
             <div className="text-center">
@@ -200,11 +192,11 @@ const ProfilePage = () => {
           </div>
           
           <div className="mb-2">
-            <h2 className="font-semibold text-gray">{profileUser.username}</h2>
+            <h2 className="font-semibold text-gray">{profileUser.fullName || profileUser.username}</h2>
             <p className="text-gray">{profileUser.bio || "No bio yet"}</p>
           </div>
           <p className="text-sm text-gray">
-            Joined {profileUser.createdAt ? formatDate(profileUser.createdAt) : "Unknown date"}
+            Joined {formatDate(profileUser.createdAt)}
           </p>
         </div>
       </div>
@@ -212,7 +204,7 @@ const ProfilePage = () => {
       <div className="border-t border-gray">
         <div className="flex justify-center gap-12">
           <button 
-            className={`py-4 px-5 border-t-2  flex items-center gap-1 text-gray ${
+            className={`py-4 px-5 border-t-2 flex items-center gap-1 text-gray ${
               activeTab === 'posts' ? 'border-gray font-medium bg-gray text-mindaro' : 'border-transparent'
             }`}
             onClick={() => setActiveTab('posts')}
@@ -233,7 +225,10 @@ const ProfilePage = () => {
       </div>
 
       {activeTab === 'posts' ? (
-        <PostGrid posts={profileUser.posts} />
+        <PostGrid 
+          posts={userPosts} 
+          onPostClick={setSelectedPost}
+        />
       ) : (
         <div className="col-span-3 py-16 text-center">
           <FiBookmark size={48} className="mx-auto text-gray-600 mb-4" />
@@ -241,7 +236,6 @@ const ProfilePage = () => {
           <p className="text-gray-400">Save photos and videos that you want to see again</p>
         </div>
       )}
-    </div>
     </div>
   );
 };

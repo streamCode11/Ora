@@ -128,7 +128,7 @@ const signup = async (req, res) => {
       JWT_SECRET
     );
     res.cookie("jwt", token, {
-      expiresIn: 7 * 24 * 60 * 60 * 1000,
+      expiresIn: "30d",
       httpOnly: true,
       sameSite: "strict",
     });
