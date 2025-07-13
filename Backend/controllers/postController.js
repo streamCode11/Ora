@@ -2,26 +2,27 @@ import cloudinary from "../config/cloudinaryMain.js";
 import User from "../models/authSchema.js";
 import Post from "../models/postSchema.js";
 
-// Create a new post with images
-// Create a new post with images
+
 export const createPost = async (req, res) => {
   try {
     const { caption, settings, userId } = req.body;
-    
+
     if (!userId) {
       return res.status(400).json({ message: "User ID is required" });
     }
 
     if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ message: "At least one image is required" });
+      return res
+        .status(400)
+        .json({ message: "At least one image is required" });
     }
 
-    const imageUploads = req.files.map(file => 
+    const imageUploads = req.files.map((file) =>
       cloudinary.uploader.upload(file.path)
     );
-    
+
     const uploadedImages = await Promise.all(imageUploads);
-    const imageUrls = uploadedImages.map(img => img.secure_url);
+    const imageUrls = uploadedImages.map((img) => img.secure_url);
 
     const newPost = new Post({
       user: userId,
@@ -34,10 +35,9 @@ export const createPost = async (req, res) => {
     });
 
     const savedPost = await newPost.save();
-    
-    // Update user's posts array
+
     await User.findByIdAndUpdate(userId, {
-      $push: { posts: savedPost._id }
+      $push: { posts: savedPost._id },
     });
 
     res.status(201).json(savedPost);
@@ -62,18 +62,17 @@ export const getPosts = async (req, res) => {
   }
 };
 
-// Get a single post by ID
 export const getPost = async (req, res) => {
   try {
-    const posts = await Post.find({ user: req.params.userId })
-      .sort({ createdAt: -1 });
+    const posts = await Post.find({ user: req.params.userId }).sort({
+      createdAt: -1,
+    });
     res.json(posts);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
-}
+};
 
-// Update a post
 export const updatePost = async (req, res) => {
   try {
     const { caption, settings } = req.body;
@@ -86,15 +85,23 @@ export const updatePost = async (req, res) => {
     }
 
     if (post.user.toString() !== userId) {
-      return res.status(403).json({ message: "You can only update your own posts" });
+      return res
+        .status(403)
+        .json({ message: "You can only update your own posts" });
     }
 
     post.caption = caption || post.caption;
-    
+
     if (settings) {
       post.settings = {
-        hideLikeCount: settings.hideLikeCount !== undefined ? settings.hideLikeCount : post.settings.hideLikeCount,
-        disableComments: settings.disableComments !== undefined ? settings.disableComments : post.settings.disableComments,
+        hideLikeCount:
+          settings.hideLikeCount !== undefined
+            ? settings.hideLikeCount
+            : post.settings.hideLikeCount,
+        disableComments:
+          settings.disableComments !== undefined
+            ? settings.disableComments
+            : post.settings.disableComments,
       };
     }
 
@@ -106,7 +113,6 @@ export const updatePost = async (req, res) => {
   }
 };
 
-// Delete a post
 export const deletePost = async (req, res) => {
   try {
     const postId = req.params.id;
@@ -118,18 +124,19 @@ export const deletePost = async (req, res) => {
     }
 
     if (post.user.toString() !== userId) {
-      return res.status(403).json({ message: "You can only delete your own posts" });
+      return res
+        .status(403)
+        .json({ message: "You can only delete your own posts" });
     }
 
-    // Delete images from Cloudinary
-    const deletePromises = post.images.map(imageUrl => {
-      const publicId = imageUrl.split('/').pop().split('.')[0];
+    const deletePromises = post.images.map((imageUrl) => {
+      const publicId = imageUrl.split("/").pop().split(".")[0];
       return cloudinary.uploader.destroy(publicId);
     });
 
     await Promise.all(deletePromises);
     await Post.findByIdAndDelete(postId);
-    
+
     res.status(200).json({ message: "Post deleted successfully" });
   } catch (err) {
     console.error("Error deleting post:", err);
@@ -137,7 +144,6 @@ export const deletePost = async (req, res) => {
   }
 };
 
-// Like/Unlike a post
 export const toggleLike = async (req, res) => {
   try {
     const postId = req.params.id;
@@ -163,20 +169,17 @@ export const toggleLike = async (req, res) => {
   }
 };
 
-// Get posts by a specific user
-// Get posts by user ID
-// Get posts by user ID (no auth required)
 export const getPostsByUserId = async (req, res) => {
   try {
     const userId = req.params.userId;
-    
+
     if (!userId) {
       return res.status(400).json({ message: "User ID is required" });
     }
 
     const posts = await Post.find({ user: userId })
       .sort({ createdAt: -1 })
-      .populate('user', 'username profileImg');
+      .populate("user", "username profileImg");
 
     res.json(posts);
   } catch (err) {
@@ -186,15 +189,18 @@ export const getPostsByUserId = async (req, res) => {
 };
 export const getPublicUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId)
-      .select('-password -email -resetPasswordToken');
-    
+    const user = await User.findById(req.params.userId).select(
+      "-password -email -resetPasswordToken"
+    );
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    
+
     res.json({ user });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
+// controllers/postController.js

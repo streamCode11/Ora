@@ -1,12 +1,13 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/auth";
+import LoaderCom from "../components/common/Loader";
 
 const ProtectedRoute = ({ children }) => {
   const [auth] = useAuth();
   const location = useLocation();
 
   if (auth.loading) {
-    return <div>Loading...</div>; 
+    return <LoaderCom/>; 
   }
 
   if (!auth.token) {

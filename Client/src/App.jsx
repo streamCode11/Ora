@@ -6,9 +6,8 @@ import Register from "./pages/auth/RegisterPage";
 import ActivateAccount from "./pages/auth/ActivateAcc";
 import MainPage from "./pages/MainPage";
 import ProfilePage from "./pages/profile/ProfilePage";
-// import UserProfilePage from "./pages/profile/OtherProfilePage"; // Add this import
 import EditProfilePage from "./pages/profile/EditProfilePage";
-import ChatWindow from "./pages/chat/ChatWindow";
+import PostDetailPage from "./components/common/PostDetails";
 
 function App() {
   return (
@@ -27,12 +26,8 @@ function App() {
         <Route index element={<HomePage />} />
         <Route path="home" element={<HomePage />} />
         <Route path="edit-profile" element={<EditProfilePage />} />
-        <Route path="chat" element={<ChatWindow />} />
-        <Route path="chat/:id" element={<ChatWindow />} />
-        {/* Current user's profile */}
         <Route path="profile" element={<ProfilePage />} />
-        {/* Other users' profiles */}
-        {/* <Route path="profile/:id" element={<UserProfilePage />} /> */}
+        <Route path="/post/:postId" element={<PostDetailPage/>}/>
       </Route>
     </Routes>
   );

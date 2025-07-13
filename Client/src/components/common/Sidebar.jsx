@@ -2,46 +2,22 @@ import React, { useState, useEffect } from "react";
 import {
   FiHome,
   FiCompass,
-  FiSettings,
   FiLogOut,
   FiPlus,
   FiBookmark,
   FiEdit,
+  FiChevronLeft,
+  FiChevronRight,
 } from "react-icons/fi";
 import { RiMessengerLine } from "react-icons/ri";
 import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import webLogo from "../../assets/Ora bg.png";
-import Apis from "../../config/apis";
-import axios from "axios";
 import PostForm from "../posts/PostForm";
 import { useAuth } from "../../context/auth";
 
-const Logout = async () => {
-  try {
-    const response = await axios.post(
-      `${Apis.auth}/logout`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("auth")}`,
-        },
-      }
-    );
-    if (response.data.ok) {
-      localStorage.removeItem("auth");
-      window.location.href = "/login";
-    } else {
-      console.error(response.data.error);
-    }
-  } catch (error) {
-    console.error("Logout failed:", error);
-  }
-};
-
 const Sidebar = () => {
   const [openPostForm, setOpenPostForm] = useState(false);
-  const [auth] = useAuth();
-  const [posts, setPosts] = useState([]);
   const [userData, setUserData] = useState({
     profileImg: "",
     username: "",
@@ -60,17 +36,9 @@ const Sidebar = () => {
       console.log("Error parsing auth data:", error);
     }
   }, []);
-  const handlePostCreated = (newPost) => {
-    setPosts(prevPosts => [newPost, ...prevPosts]);
-    setOpenPostForm(false);
-  };
+
   const navLinks = [
-    {
-      id: 0,
-      name: "Home",
-      to: "/home",
-      icon: <FiHome className="text-xl" />,
-    },
+    { id: 0, name: "Home", to: "/home", icon: <FiHome className="text-xl" /> },
     {
       id: 1,
       name: "Explore",
@@ -85,7 +53,7 @@ const Sidebar = () => {
     },
     {
       id: 3,
-      name: "saved",
+      name: "Saved",
       to: "/saved",
       icon: <FiBookmark className="text-xl" />,
     },
@@ -98,66 +66,80 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="h-screen w-70 flex flex-col justify-between py-3 bg-white ">
-      <div className="flex flex-col px-4 space-y-1">
-        <div className="ml-5 mb-10 h-19 w-auto">
-          <img src={webLogo} className="h-full w-auto" alt="Website Logo" />
+    <>
+      <motion.div
+        className="h-screen hidden sticky lg:w-70 bg-white lg:flex flex-col py-3  left-0 top-0 z-40 shadow-lg"
+        initial={{ x: 0 }}
+      >
+        {/* Logo */}
+        <div className="flex items-center  px-4 mb-5">
+          <img
+            src={webLogo}
+            className="h-10 lg:h-19 w-auto"
+            alt="Website Logo"
+          />
         </div>
-        {navLinks.map((link) => (
-          <Link
-            key={link.id}
-            to={link.to}
-            className="flex items-center px-3 py-3 gap-3 rounded-lg border-2 border-transparent
-                      text-gray transition-all  hover:border-mindaro"
-          >
-            <span>{link.icon}</span>
-            <span className="text-sm font-medium">{link.name}</span>
-          </Link>
-        ))}
 
-        <button
-          onClick={() => setOpenPostForm(true)}
-          className="flex items-center px-3 py-3 gap-3 rounded-lg border-2 border-transparent
-                    text-gray  hover:border-mindaro mt-2"
-        >
-          <FiPlus className="text-xl" />
-          <span className="text-sm font-medium">Create Post</span>
-        </button>
-      </div>
-
-      <div className="px-4 pb-4">
-        <div className="pt-2">
-          <Link
-            to="/profile"
-            className="flex items-center gap-3 text-gray px-3 py-2  "
-          >
-            <img
-              src={userData.profileImg || "/default-profile.png"}
-              alt="Profile"
-              className="w-8 h-8 rounded-full object-cover"
-            />
-            <span className="text-sm font-medium ">
-              {userData.username || "User"}
-            </span>
-          </Link>
+        {/* Navigation Links */}
+        <div className="flex flex-col px-4 space-y-2 flex-1">
+          {navLinks.map((link) => (
+            <Link
+              key={link.id}
+              to={link.to}
+              className="flex items-center p-2 gap-2 lg:px-3 lg:py-3 lg:gap-3 rounded-lg border-2 border-transparent text-gray transition-all hover:border-mindaro"
+            >
+              <span className="text-[10px] lg:text-lg">{link.icon}</span>
+              <span className="text-[14px] lg:text-sm font-medium">
+                {link.name}
+              </span>
+            </Link>
+          ))}
 
           <button
-            onClick={Logout}
-            className="flex items-center w-full px-3 py-2 gap-3 rounded-lg
-                      text-gray transition-colors mt-1"
+            onClick={() => setOpenPostForm(true)}
+            className="flex items-center px-3 py-3 gap-3 rounded-lg border-2 border-transparent text-gray hover:border-mindaro mt-2"
           >
-            <FiLogOut className="text-xl" />
-            <span className="text-sm font-medium">Log Out</span>
+            <FiPlus className="text-xl" />
+            <span className="text-sm font-medium">Create Post</span>
           </button>
         </div>
-      </div>
 
+        {/* User Section */}
+        <div className="px-4 pb-4">
+          <div className="pt-2">
+            <Link
+              to="/profile"
+              className="flex items-center gap-3 text-gray px-3 py-2 rounded-lg hover:bg-gray-100"
+            >
+              <img
+                src={userData.profileImg || "/default-profile.png"}
+                alt="Profile"
+                className="w-8 h-8 rounded-full object-cover"
+              />
+              <span className="text-sm font-medium">
+                {userData.username || "User"}
+              </span>
+            </Link>
+
+            <button
+              onClick={() => {
+                localStorage.removeItem("auth");
+                window.location.href = "/login";
+              }}
+              className="flex items-center w-full px-3 py-2 gap-3 rounded-lg text-gray hover:bg-gray-100 mt-1"
+            >
+              <FiLogOut className="text-xl" />
+              <span className="text-sm font-medium">Log Out</span>
+            </button>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Post Form Modal */}
       {openPostForm && (
-        <PostForm closePostForm={() => setOpenPostForm(false)} 
-        onPostCreated={handlePostCreated} 
-        />
+        <PostForm closePostForm={() => setOpenPostForm(false)} />
       )}
-    </div>
+    </>
   );
 };
 

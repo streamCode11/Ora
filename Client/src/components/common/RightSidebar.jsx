@@ -4,7 +4,7 @@ import TrendingTopic from "./TrendingTopic";
 
 const RightSidebar = () => {
   return (
-    <div className="fixed top-20 right-0 h-screen w-100   p-4 overflow-y-auto">
+    <div className=" hidden sticky lg:block top-20 right-0 h-screen w-100   p-4 overflow-y-auto">
       <Suggestion />
       <TrendingTopic />
     </div>

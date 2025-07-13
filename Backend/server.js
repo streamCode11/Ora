@@ -8,9 +8,7 @@ import { fileURLToPath } from 'url';
 import authRouter from "./routes/authRoutes.js";
 import commentRoutes from './routes/commentRoutes.js';
 import postRouter from "./routes/postRoutes.js";
-import messageRoutes from "./routes/messageRoutes.js";
-import http from 'http';
-import { Server } from 'socket.io';
+
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -24,16 +22,19 @@ if (!fs.existsSync(uploadsDir)) {
 
 app.use('/uploads', express.static(uploadsDir));
 
-app.use(cors());
+const corsOptions = {
+  origin: 'http://localhost:5173', // Your frontend origin
+  credentials: true, // Allow credentials
+  optionsSuccessStatus: 200 // For legacy browser support
+};
+
+app.use(cors(corsOptions));
+
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-
 app.use(`${pre}/comments`, commentRoutes);
 app.use(`${pre}/posts`, postRouter);
 app.use(`${pre}/auth`, authRouter);
-app.use(`${pre}/messages` , messageRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

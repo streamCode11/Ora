@@ -29,7 +29,7 @@ const defaultuser = [
 ];
 const Suggestion = () => {
   return (
-    <div className="mt-4 mb-6 w-85 min-h-30 max-h-auto bg-white rounded-lg py-4 px-3">
+    <div className=" hidden lg:block mt-4 mb-6 w-85 min-h-30 max-h-auto bg-white rounded-lg py-4 px-3">
       <h2 className="text-skin text-xl capitalize">suggestion for you</h2>
       <ul className="mt-4 flex flex-col space-y-4">
         {defaultuser.map((user) => (

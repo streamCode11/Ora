@@ -7,9 +7,10 @@ import {
   deletePost,
   toggleLike,
   getPostsByUserId,
-  getPublicUserProfile
+  getPublicUserProfile,
 } from "../controllers/postController.js";
 import multer from "multer";
+import { protect } from "../middleware/auth.js";
 
 const postRouter = express.Router();
 const upload = multer({ dest: 'uploads/' }); 

@@ -44,13 +44,13 @@ const SearchList = ({ searchTerm, onClose }) => {
   };
 
   return (
-    <div className="absolute z-10 top-23 w-103 bg-white rounded-lg shadow-lg border border-gray-200 max-h-80 overflow-y-auto">
+    <div className=" absolute left-0 top-20 mx-3 w-[calc(100vw-24px)] z-10 lg:top-23 lg:w-103 bg-white rounded-lg shadow-lg border border-gray-200 max-h-80 overflow-y-auto">
       {loading ? (
         <div className="p-4 flex justify-center items-center">
-          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-mindaro"></div>
         </div>
       ) : error ? (
-        <div className="p-3 text-red-500 text-sm">{error}</div>
+        <div className="p-3 text-red-500 bg-red-300 text-sm">{error}</div>
       ) : results.length > 0 ? (
         <ul className="divide-y divide-gray-100">
           {results.map((user) => (
@@ -60,7 +60,7 @@ const SearchList = ({ searchTerm, onClose }) => {
             >
               <Link
                 to={`/profile/${user._id}`}
-                className="block p-3 flex items-center"
+                className=" p-3 flex items-center"
                 onClick={(e) => handleClick(user._id, e)}
               >
                 <img

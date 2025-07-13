@@ -1,27 +1,28 @@
 import User from "../models/authSchema.js";
 import cloudinary from "../config/cloudinaryMain.js";
 
+// authController.js
 const UpdateUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findOneAndUpdate(req.user.id);
     if (!user) {
       return res.status(404).json({
         message: "User not found",
         ok: false,
       });
     }
-    
-    const { username, firstName, lastName, bio, profileImg } = req.body;
 
-    if (profileImg) {
-      const uploadResponseImage = await cloudinary.uploader.upload(profileImg);
-      user.profileImg = uploadResponseImage.secure_url;
+    let profileImgUrl = user.profileImg;
+    if (req.file) {
+      const uploadResponseImage = await cloudinary.uploader.upload(req.file.path);
+      profileImgUrl = uploadResponseImage.secure_url;
+      fs.unlinkSync(req.file.path);
     }
 
-    user.username = username || user.username;
-    user.firstName = firstName || user.firstName;
-    user.lastName = lastName || user.lastName;
-    user.bio = bio || user.bio;
+    user.username = req.body.username || user.username;
+    user.fullName = req.body.fullName || user.fullName;
+    user.bio = req.body.bio || user.bio;
+    user.profileImg = profileImgUrl;
     
     const updatedUser = await user.save();
 
@@ -31,8 +32,7 @@ const UpdateUserProfile = async (req, res) => {
       user: {
         _id: updatedUser._id,
         username: updatedUser.username,
-        firstName: updatedUser.firstName,
-        lastName: updatedUser.lastName,
+        fullName: updatedUser.fullName,
         bio: updatedUser.bio,
         profileImg: updatedUser.profileImg,
         followers: updatedUser.followers,
@@ -42,7 +42,7 @@ const UpdateUserProfile = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("Profile update error:", error);
     res.status(500).json({ 
       message: "Internal server error",
       error: error.message 

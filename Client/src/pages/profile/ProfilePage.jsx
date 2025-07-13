@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import PostGrid from '../../components/common/Postgrid';
 import { 
   FiEdit, FiSettings, FiUserPlus, FiGrid, 
   FiBookmark
@@ -9,6 +8,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import LoaderCom from '../../components/common/Loader';
 import Apis from '../../config/apis';
+import PostGrid from '../../components/common/PostGrid';
 
 const ProfilePage = () => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -19,6 +19,26 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState(null);
   const { id } = useParams();
+
+  const fetchUserPosts = async (userId) => {
+    try {
+      const authData = JSON.parse(localStorage.getItem("auth"));
+      const response = await axios.get(`${Apis.base}/posts`, {
+        headers: {
+          'x-auth-token': authData.token
+        }
+      });
+  
+      return response.data.filter(post => {
+        const postUserId = post.user?._id || post.user?.$oid || post.user;
+        return postUserId === userId;
+      });
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      toast.error('Failed to load posts');
+      return [];
+    }
+  };
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -34,7 +54,7 @@ const ProfilePage = () => {
         setCurrentUser(authData.user);
         const userIdToFetch = id || authData.user._id;
         
-        // Fetch user profile data
+        // Fetch user data
         const userResponse = await axios.get(`${Apis.auth}/${userIdToFetch}`, {
           headers: {
             'x-auth-token': authData.token
@@ -43,25 +63,13 @@ const ProfilePage = () => {
         
         setProfileUser(userResponse.data.user);
         
-        // Check if current user is following this profile
         if (id && id !== authData.user._id) {
           setIsFollowing(authData.user.following?.includes(id) || false);
         }
         
-        // Fetch user's posts data if they have any
-        if (userResponse.data.user.posts?.length > 0) {
-          const postsResponse = await axios.get(`${Apis.base}/posts`, {
-            params: {
-              ids: userResponse.data.user.posts.join(',')
-            },
-            headers: {
-              'x-auth-token': authData.token
-            }
-          });
-          setUserPosts(postsResponse.data || []);
-        } else {
-          setUserPosts([]);
-        }
+        // Fetch and filter posts for this user
+        const posts = await fetchUserPosts(userIdToFetch);
+        setUserPosts(posts);
       } catch (err) {
         console.log('Error fetching profile data:', err);
         toast.error(err.response?.data?.message || 'Failed to load profile data');
@@ -89,7 +97,7 @@ const ProfilePage = () => {
 
       const endpoint = isFollowing ? 'unfollow' : 'follow';
       const response = await axios.patch(
-        `/api/v1/auth/${id}/${endpoint}`, 
+        `${Apis.auth}/${id}/${endpoint}`, 
         null,
         {
           headers: {
@@ -225,10 +233,18 @@ const ProfilePage = () => {
       </div>
 
       {activeTab === 'posts' ? (
-        <PostGrid 
-          posts={userPosts} 
-          onPostClick={setSelectedPost}
-        />
+        userPosts.length > 0 ? (
+          <PostGrid 
+            posts={userPosts} 
+            onPostClick={setSelectedPost}
+          />
+        ) : (
+          <div className="col-span-3 py-16 text-center">
+            <FiGrid size={48} className="mx-auto text-gray-600 mb-4" />
+            <h3 className="text-xl text-gray font-bold mb-2">No Posts Yet</h3>
+            <p className="text-gray-400">When you share photos, they'll appear here</p>
+          </div>
+        )
       ) : (
         <div className="col-span-3 py-16 text-center">
           <FiBookmark size={48} className="mx-auto text-gray-600 mb-4" />
