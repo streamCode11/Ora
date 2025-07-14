@@ -147,7 +147,7 @@ export const deletePost = async (req, res) => {
 export const toggleLike = async (req, res) => {
   try {
     const postId = req.params.id;
-    const userId = req.user.id;
+    const { userId } = req.body;
 
     const post = await Post.findById(postId);
     if (!post) {
@@ -203,4 +203,50 @@ export const getPublicUserProfile = async (req, res) => {
   }
 };
 
-// controllers/postController.js
+export const handleSavePost = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { postId, action } = req.body;
+
+    if (!userId || !postId) {
+      return res.status(400).json({ message: "User ID and Post ID are required" });
+    }
+
+    // Changed from findByIdAndUpdate to findById
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    let update;
+    if (action === 'add') {
+      if (!user.savedPosts.includes(postId)) {
+        update = { $addToSet: { savedPosts: postId } }; // $addToSet prevents duplicates
+      }
+    } else if (action === 'remove') {
+      update = { $pull: { savedPosts: postId } };
+    }
+
+    if (update) {
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        update,
+        { new: true } // Return the updated document
+      );
+      
+      return res.status(200).json({ success: true, user: updatedUser });
+    }
+
+    // If no update was needed (e.g., trying to add an already saved post)
+    return res.status(200).json({ success: true, user });
+
+  } catch (err) {
+    console.error("Save post error:", err);
+    res.status(500).json({ message: "Failed to save post" });
+  }
+};

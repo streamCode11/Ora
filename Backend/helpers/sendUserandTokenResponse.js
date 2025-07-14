@@ -13,7 +13,7 @@ const responseTokenAndUser = (req, res, user) => {
         const refreshToken = jwt.sign({
             id: user._id
         }, JWT_SECRET, {
-            expiresIn: '30d'
+            expiresIn: 30 * 24 * 60 * 60 ,
         });
 
         user.password = undefined

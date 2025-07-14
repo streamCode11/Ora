@@ -2,6 +2,7 @@ import app from "./inc/app.js";
 import express from "express";
 import {PORT, pre} from "./config/cloudinary.js";
 import DatabaseConn from "./config/db.js";
+import cookieParser from "cookie-parser"
 import cors from "cors";
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -28,8 +29,8 @@ const corsOptions = {
   optionsSuccessStatus: 200 // For legacy browser support
 };
 
-app.use(cors(corsOptions));
-
+app.use(cors());
+app.use(cookieParser());
 
 app.use(express.json());
 app.use(`${pre}/comments`, commentRoutes);

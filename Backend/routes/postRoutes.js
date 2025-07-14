@@ -8,6 +8,7 @@ import {
   toggleLike,
   getPostsByUserId,
   getPublicUserProfile,
+  handleSavePost
 } from "../controllers/postController.js";
 import multer from "multer";
 import { protect } from "../middleware/auth.js";
@@ -23,6 +24,7 @@ postRouter.delete("/:id", deletePost);
 postRouter.post("/:id/like", toggleLike);
 postRouter.get("/users/:userId", getPostsByUserId);
 postRouter.get('/public/:userId', getPublicUserProfile);
+postRouter.put('/:userId/savedPosts', handleSavePost);
 
 
 export default postRouter;

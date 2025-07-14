@@ -38,7 +38,7 @@ authRouter
   .put("/", protect, upload.single('profileImg') , user.UpdateUserProfile)
   .get("/me", protect, user.getMyProfile)
   .get("/search", user.searchUser) 
-  .get("/:id", user.getUserProfile) 
+  .get("/:id", user.getUserProfileById) 
   .get("/", user.getAllUser);
 
 export default authRouter;

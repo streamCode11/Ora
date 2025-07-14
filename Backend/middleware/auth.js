@@ -21,7 +21,7 @@ const protect = async (req, res, next) => {
     });
   }
 
-  const token = authHeader.split(' ')[1];
+  const token = req.cookies.token;
   
   try {
     const decoded = jwt.verify(token, JWT_SECRET);

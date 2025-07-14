@@ -50,7 +50,7 @@ const UpdateUserProfile = async (req, res) => {
   }
 };
 
-const getUserProfile = async (req, res) => {
+const getUserProfileById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id)
       .select('-password -email -__v');
@@ -152,7 +152,7 @@ const searchUser = async (req, res) => {
 
 export { 
   UpdateUserProfile, 
-  getUserProfile, 
+  getUserProfileById, 
   getMyProfile, 
   getAllUser, 
   searchUser 
