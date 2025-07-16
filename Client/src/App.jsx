@@ -41,7 +41,7 @@ function App() {
         <Route index element={<HomePage />} />
         <Route path="home" element={<HomePage />} />
         <Route path="edit-profile" element={<EditProfilePage />} />
-        <Route path="profile" element={<ProfilePage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="profile/:id" element={<ProfilePage />} />
         <Route
           path="explore"

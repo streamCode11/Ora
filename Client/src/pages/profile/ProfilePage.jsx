@@ -94,7 +94,7 @@ const ProfilePage = () => {
 
         // Set current user from auth data
         setCurrentUser(authData.user);
-        const userIdToFetch = id || authData.user.id;
+        const userIdToFetch = id || authData.user._id;
         debugLog('User ID to fetch', userIdToFetch);
         
         // Fetch user data
@@ -224,7 +224,7 @@ const ProfilePage = () => {
     );
   }
 
-  const isOwnProfile = !id || currentUser?.id === profileUser.id;
+  const isOwnProfile = !id || currentUser?._id === profileUser._id;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 text-white">
