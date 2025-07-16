@@ -1,15 +1,12 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import validator from "email-validator";
-import { JWT_SECRET, CLIENT_URL } from "../config/cloudinary.js";
+import { JWT_SECRET } from "../config/cloudinary.js";
 import pwd from "password-validator";
-import { AWSSES } from "../config/awsses.js";
 import User from "../models/authSchema.js";
-import responseTokenAndUser from "../helpers/sendUserandTokenResponse.js";
-import EmailTemplate from "../helpers/emailTemplate.js";
+import cloudinary from "../config/cloudinaryMain.js";
 
 const pschema = new pwd();
-
 pschema
   .is()
   .min(8)
@@ -25,247 +22,186 @@ pschema
   .not()
   .spaces();
 
-const preSignup = async (req, res) => {
-  try {
-    const { email, password, username, fullName } = req.body;
-    if (!email || !password || !username || !fullName) {
-      return res.json({
-        ok: false,
-        error: "Please provide both fields",
-      });
-    }
-
-    if (!pschema.validate(password)) {
-      return res.json({
-        ok: false,
-        error: "Password is invalid",
-      });
-    }
-
-    if (!validator.validate(email)) {
-      return res.json({
-        ok: false,
-        error: "Email is invalid",
-      });
-    }
-
-    const emailExist = await User.findOne({ email });
-
-    if (emailExist) {
-      return res.json({
-        ok: false,
-        error: "Email is already taken please try with unique email",
-      });
-    }
-    const usernameExist = await User.findOne({ username });
-
-    if (usernameExist) {
-      return res.json({
-        ok: false,
-        error: "username is already taken please try with unique username",
-      });
-    }
-
-    const token = jwt.sign(
-      { email, password, username, fullName },
-      JWT_SECRET,
-      {
-        expiresIn: "6h",
-      }
-    );
-
-    AWSSES.sendEmail(
-      EmailTemplate(
-        email,
-        ` Signup - Verification Link `,
-        `
-                <h2>  Ora Register Page   </h2>
-                <p>Please click on below link to complete the  
-                signup process </p>
-
-
-                <a href="${CLIENT_URL}/${token}"> Create Account   </a>
-
-             
-             `
-      ),
-      (err, data) => {
-        if (err) {
-          res.json({
-            ok: false,
-            error: err.message,
-          });
-        }
-        if (data) {
-          res.json({
-            ok: true,
-            data,
-            message:
-              "Please check your email address for complete the signup process with Ora.com",
-          });
-        }
-      }
-    );
-  } catch (err) {
-    return res.json({
-      ok: false,
-      error: err.message,
-    });
-  }
-};
-
+// Signup - Direct account creation
 const signup = async (req, res) => {
   try {
-    if (!req.body.token) {
-      return res.json({
-        ok: false,
-        error: "Please provide token in request body",
-      });
-    }
-    const token = req.body.token;
-    const { email, password, username, fullName } = jwt.verify(
-      token,
-      JWT_SECRET
-    );
-    res.cookie("jwt", token, {
-      expiresIn: "30d",
-      httpOnly: true,
-      sameSite: "strict",
-    });
+    const { email, password, username, fullName, profileImg } = req.body;
 
+    // Validation
     if (!email || !password || !username || !fullName) {
-      return res.json({
-        ok: false,
-        error: "Please provide both fields",
+      return res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
+    }
+
+    if (username.length < 5) {
+      return res.status(400).json({
+        success: false,
+        message: "Username must be at least 5 characters",
       });
     }
 
     if (!pschema.validate(password)) {
-      return res.json({
-        ok: false,
-        error: "Password is invalid",
+      return res.status(400).json({
+        success: false,
+        message:
+          "Password must be 8-30 characters with uppercase, lowercase, digits and no spaces",
       });
     }
 
     if (!validator.validate(email)) {
-      return res.json({
-        ok: false,
-        error: "Email is invalid",
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid email format" });
+    }
+
+    // Check existing users
+    const [emailExist, usernameExist] = await Promise.all([
+      User.findOne({ email }),
+      User.findOne({ username }),
+    ]);
+
+    if (emailExist || usernameExist) {
+      return res.status(409).json({
+        success: false,
+        message: "Email or username already exists",
       });
     }
 
-    const emailExist = await User.findOne({ email });
-
-    if (emailExist) {
-      return res.json({
-        ok: false,
-        error: "Email is already taken please try with unique email",
-      });
-    }
-    const usernameExist = await User.findOne({ username });
-
-    if (usernameExist) {
-      return res.json({
-        ok: false,
-        error: "username is already taken please try with unique username",
-      });
-    }
-
+    // Hash password
     const salt = await bcrypt.genSalt(12);
-    const hashedpassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    const newUser = await new User({
+    // Handle profile image upload if exists
+    let profileImgUrl = profileImg || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXIdvC1Q4WL7_zA6cJm3yileyBT2OsWhBb9Q&s";
+
+    if (profileImg && profileImg.startsWith('data:')) {
+      const uploadResponse = await cloudinary.uploader.upload(profileImg, {
+        folder: "user_profiles",
+      });
+      profileImgUrl = uploadResponse.secure_url;
+    }
+
+    // Create new user with default values
+    const newUser = await User.create({
       email,
-      password: hashedpassword,
-      username: username,
-      fullName: fullName,
-    }).save();
-    console.log(newUser);
+      password: hashedPassword,
+      username,
+      fullName,
+      profileImg: profileImgUrl,
+      bio: "Hey there! I am using Ora",
+      role: "user",
+      posts: [],
+      followers: [],
+      following: [],
+      savedPosts: [],
+      isVerified: true,
+    });
 
-    console.log("your account has been created.");
-    return res.json({
-      ok: true,
-      message: "your account has been created.",
+    // Generate auth token
+    const authToken = jwt.sign({ userId: newUser._id }, JWT_SECRET, {
+      expiresIn: "30d",
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Account created successfully",
+      token: authToken,
+      user: {
+        username: newUser.username,
+        email: newUser.email,
+        fullName: newUser.fullName,
+        profileImg: newUser.profileImg,
+        bio: newUser.bio,
+        posts:newUser.posts,
+        savedPosts:newUser.savedPosts,
+        followers: newUser.followers,
+        following: newUser.following,
+      },
     });
   } catch (err) {
-    return res.json({
-      ok: false,
-      error: err.message,
-    });
+    console.error("Signup error:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
 const login = async (req, res) => {
   try {
-    const { email, password, username } = req.body;
+    const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.json({
-        ok: false,
-        error: "Please provide both fields",
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required",
       });
     }
 
-    if (!pschema.validate(password)) {
-      return res.json({
-        ok: false,
-        error: "Password is invalid",
-      });
-    }
     if (!validator.validate(email)) {
-      return res.json({
-        ok: false,
-        error: "Email is invalid",
-      });
-    }
-    const EmailName = await User.findOne({ email });
-    if (!EmailName) {
-      return res.json({
-        ok: false,
-        error: "User not found with this email",
-      });
-    }
-    const isPasswordMatched = await bcrypt.compare(
-      password,
-      EmailName.password
-    );
-    if (!isPasswordMatched) {
-      return res.json({
-        ok: false,
-        error: "Password is in-correct",
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email format",
       });
     }
 
-    responseTokenAndUser(req, res, EmailName);
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    // Generate auth token
+    const authToken = jwt.sign({ userId: user._id }, JWT_SECRET, {
+      expiresIn: "30d",
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token: authToken,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        fullName: user.fullName,
+        profileImg: user.profileImg,
+        bio: user.bio,
+        followers: user.followers,
+        following: user.following,
+        savedPosts: user.savedPosts,
+      },
+    });
   } catch (err) {
-    res.json({
-      ok: false,
-      error: err.message,
+    console.error("Login error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
     });
   }
 };
-let blacklistToken = [];
-const Logout = async (req, res) => {
-  let token = req.headers.authorization.split(" ")[1];
+
+const logout = async (req, res) => {
   try {
-    if (!token) {
-      return res.json({
-        ok: false,
-        error: "Please provide token in request header",
-      });
-    }
-    blacklistToken.push(token);
-    return res.json({
-      ok: true,
-      message: "You have been logged out successfully",
+    return res.status(200).json({
+      success: true,
+      message: "Logout successful. Please remove the token from client storage.",
     });
   } catch (err) {
-    return res.json({
-      ok: false,
-      error: err.message,
+    console.error("Logout error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
     });
   }
 };
 
-
-export { preSignup, signup, login, Logout };
+export { signup, login, logout };

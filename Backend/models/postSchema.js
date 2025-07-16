@@ -21,12 +21,10 @@ const postSchema = new Schema(
         ref: "User",
       },
     ],
-    comments: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Comment",
-      },
-    ],
+    comments: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Comment"
+    }],
     settings: {
       hideLikeCount: { type: Boolean, default: false },
       disableComments: { type: Boolean, default: false },

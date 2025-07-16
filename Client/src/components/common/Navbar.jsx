@@ -42,7 +42,7 @@ const Navbar = () => {
         });
       }
     } catch (error) {
-      console.error("Error parsing auth data:", error);
+      console.log("Error parsing auth data:", error);
     }
   }, []);
 
@@ -74,7 +74,7 @@ const Navbar = () => {
   };
 
   return (
-    <div className="fixed  w-screen lg:w-[calc(100vw-280px)]  lg:left-70 md:h-22 h-17 top-0 left-0 z-10 bg-white flex items-center justify-between shadow-sm">
+    <div className="fixed  w-screen lg:w-[calc(100vw-280px)]  lg:left-68 lg:h-22 h-17 top-0 left-0 z-10 bg-white flex items-center justify-between shadow-sm">
       <AnimatePresence>
         {showMobileSearch && (
           <motion.div
@@ -130,7 +130,7 @@ const Navbar = () => {
               />
             </div>
 
-            {showResults && <SearchList searchTerm={searchTerm} />}
+            {showResults ?( <SearchList searchTerm={searchTerm} />) :null}
           </div>
 
           <div className="flex items-center space-x-2 min-w-[180px] justify-end">
@@ -140,28 +140,8 @@ const Navbar = () => {
               </button>
             </div>
 
-            <Link to="/user">
-              <button className="p-2 rounded-sm md:rounded-lg bg-gray text-mindaro relative">
-                <RiMessengerLine className="md:h-6 md:w-6 h-5 w-5" />
-                <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-mindaro"></span>
-              </button>
-            </Link>
 
-            <button
-              className="p-2 rounded-sm md:rounded-lg bg-gray text-mindaro relative"
-              onClick={handleOpenNotification}
-            >
-              <IoMdNotificationsOutline className="h-5 w-5 md:h-6 md:w-6" />
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-mindaro text-xs text-gray">
-                3
-              </span>
-            </button>
-            {openNotification && (
-              <NotificationList
-                closeNotification={() => setOpenNotification(false)}
-              />
-            )}
-
+  
             <div className="relative ml-2">
               <Link to="/profile">
                 <button className="flex rounded-full focus:outline-none">

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState , useEffect } from "react";
 import {
   FiHome,
   FiCompass,
@@ -17,14 +17,51 @@ import { useAuth } from "../../context/auth";
 
 const MobileSidebar = ({ isOpen, onClose }) => {
   const [openPostForm, setOpenPostForm] = useState(false);
-  const { user, logout } = useAuth();
+  const [userData, setUserData] = useState({
+      profileImg: "",
+      username: "",
+      token: "",
+    });
+  
+    useEffect(() => {
+      try {
+        const authdata = JSON.parse(localStorage.getItem("auth"));
+        if (authdata) {
+          setUserData({
+            ...authdata.user,
+          });
+        }
+      } catch (error) {
+        console.log("Error parsing auth data:", error);
+      }
+    }, []);
 
   const navLinks = [
     { id: 0, name: "Home", to: "/home", icon: <FiHome className="text-xl" /> },
-    { id: 1, name: "Explore", to: "/explore", icon: <FiCompass className="text-xl" /> },
-    { id: 2, name: "Messages", to: "/chat", icon: <RiMessengerLine className="text-xl" /> },
-    { id: 3, name: "Saved", to: "/saved", icon: <FiBookmark className="text-xl" /> },
-    { id: 4, name: "Edit Profile", to: "/edit-profile", icon: <FiEdit className="text-xl" /> },
+    {
+      id: 1,
+      name: "Explore",
+      to: "/explore",
+      icon: <FiCompass className="text-xl" />,
+    },
+    {
+      id: 2,
+      name: "Messages",
+      to: "/chat",
+      icon: <RiMessengerLine className="text-xl" />,
+    },
+    {
+      id: 3,
+      name: "Saved",
+      to: "/saved",
+      icon: <FiBookmark className="text-xl" />,
+    },
+    {
+      id: 4,
+      name: "Edit Profile",
+      to: "/edit-profile",
+      icon: <FiEdit className="text-xl" />,
+    },
   ];
 
   return (
@@ -40,14 +77,19 @@ const MobileSidebar = ({ isOpen, onClose }) => {
           >
             {/* Logo */}
             <div className="flex items-center justify-between px-5 mb-5">
-            <div className="flex items-center px-4">
-              <img src={webLogo} className="h-10 lg:h-19 w-auto" alt="Website Logo" />
-            </div>
-            <div 
-            onClick={onClose}
-            className="bg-gray text-mindaro text-2xl h-10 w-10 flex items-center justify-center rounded-sm ">
-               <FiX/>
-            </div>
+              <div className="flex items-center px-4">
+                <img
+                  src={webLogo}
+                  className="h-10 lg:h-19 w-auto"
+                  alt="Website Logo"
+                />
+              </div>
+              <div
+                onClick={onClose}
+                className="bg-gray text-mindaro text-2xl h-10 w-10 flex items-center justify-center rounded-sm "
+              >
+                <FiX />
+              </div>
             </div>
 
             {/* Navigation Links */}
@@ -87,18 +129,19 @@ const MobileSidebar = ({ isOpen, onClose }) => {
                   onClick={onClose}
                 >
                   <img
-                    src={user?.profileImg || "/default-profile.png"}
+                    src={userData?.profileImg || "/default-profile.png"}
                     alt="Profile"
                     className="w-8 h-8 rounded-full object-cover"
                   />
                   <span className="text-sm font-medium">
-                    {user?.username || "User"}
+                    {userData?.username || "User"}
                   </span>
                 </Link>
 
                 <button
                   onClick={() => {
-                    logout();
+                    localStorage.removeItem("auth");
+                    window.location.href = "/login";
                     onClose();
                   }}
                   className="flex items-center w-full px-3 py-2 gap-3 rounded-lg text-gray hover:bg-gray-100 mt-1"

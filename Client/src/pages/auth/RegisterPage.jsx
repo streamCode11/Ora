@@ -1,243 +1,226 @@
-import React, { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { FiEye, FiEyeOff, FiUpload, FiX } from 'react-icons/fi';
-import axios from 'axios';
-import Apis from '../../config/apis';
-import webLogo from '../../assets/Ora bg.png';
+import React, { useState, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { FiEye, FiEyeOff, FiUpload, FiX } from "react-icons/fi";
+import axios from "axios";
+import Apis from "../../config/apis";
+import webLogo from "../../assets/Ora bg.png";
 
 const Register = () => {
-  // Form state
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
-  const [inputType, setInputType] = useState('password');
-  const [showPassword, setShowPassword] = useState(false);
-  const [profileImg, setProfileImage] = useState(null);
-  const [previewImage, setPreviewImage] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [registrationSuccess, setRegistrationSuccess] = useState(false);
-  
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  
+  const [formData, setFormData] = useState({
+    email: "",
+    username: "",
+    password: "",
+    fullName: "",
+    profileImg: null
+  });
+  
+  const [previewImage, setPreviewImage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-    setInputType(showPassword ? 'password' : 'text');
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (!file.type.match('image.*')) {
-        setError('Please select an image file (JPEG, PNG, etc.)');
+      // Validate image
+      if (!file.type.match("image.*")) {
+        setError("Please select an image file (JPEG, PNG, etc.)");
         return;
       }
-      
-      if (file.size > 4 * 2048 * 2048) {
-        setError('Image size should be less than' );
+      if (file.size > 4 * 1024 * 1024) {
+        setError("Image size should be less than 4MB");
         return;
       }
-      
-      setProfileImage(file);
+
+      setFormData(prev => ({ ...prev, profileImg: file }));
       setPreviewImage(URL.createObjectURL(file));
-      setError(''); 
+      setError("");
     }
   };
 
   const removeImage = () => {
-    setProfileImage(null);
-    setPreviewImage('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    setFormData(prev => ({ ...prev, profileImg: null }));
+    setPreviewImage("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handleFormSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    
-    if (!fullName || !username || !email || !password) {
-      setError('Please fill in all required fields');
-      setLoading(false);
-      return;
-    }
-    
-    try {
-     
+    setError("");
 
-      const { data } = await axios.post(`${Apis.auth}/pre-signup`,  {
-          fullName , 
-          username,
-          email , 
-          password ,
+    try {
+      // Convert image to base64 if exists
+      let profileImgBase64 = null;
+      if (formData.profileImg) {
+        profileImgBase64 = await convertToBase64(formData.profileImg);
+      }
+
+      const response = await axios.post(`${Apis.auth}/signup`, {
+        ...formData,
+        profileImg: profileImgBase64
       });
-      
-      if (data.error) {
-        setError(data.error);
-      } else {
-        setRegistrationSuccess(true);
-        setEmail('');
-        setUsername('');
-        setFullName('');
-        setPassword('');
-        setProfileImage(null);
-        setPreviewImage('');
+
+      if (response.data.success) {
+        // Store token and user data
+        localStorage.setItem("auth", JSON.stringify(response.data.user));
+        
+        // Redirect to home page or dashboard
+        navigate("/");
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Registration failed. Please try again.');
+      setError(err.response?.data?.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
+  const convertToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+  };
+
   return (
-    <div className="bg-body min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-xl py-8 px-6 ">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-100">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-md p-8">
         <div className="text-center mb-6">
-          <img src={webLogo} className="h-20 w-auto mx-auto" alt="Ora Logo" />
-          <h1 className="text-3xl font-semibold text-skin mt-4">Create Account</h1>
-          <p className="text-sm text-skinLight mt-2">Join our community</p>
+          <img src={webLogo} className="h-20 mx-auto mb-4" alt="Logo" />
+          <h1 className="text-2xl font-bold text-gray-800">Create Account</h1>
+          <p className="text-gray-600">Join our community</p>
         </div>
-        
-        {!registrationSuccess ? (
-          <form onSubmit={handleFormSubmit} className="space-y-4">
-            <div >
-              <label htmlFor="fullName" className="block text-sm font-medium text-skin mb-1">
-                Full Name 
-              </label>
-              <input
-                id="fullName"
-                type="text"
-                placeholder="Full Name"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg  outline-none border-mindaro border text-gray "
-              />
-            </div>
 
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-skin mb-1">
-                Username 
-              </label>
-              <input
-                id="username"
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg  outline-none border-mindaro border text-gray "
-              />
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-skin mb-1">
-                Email 
-              </label>
-              <input
-                id="email"
-                type="email"
-                placeholder="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg  outline-none border-mindaro border text-gray "
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-skin mb-1">
-                Password 
-              </label>
-              <div className="w-full px-4 flex gap-3 py-2 rounded-lg  outline-none border-mindaro border text-gray ">
-                <input
-                  id="password"
-                  type={inputType}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full outline-none text-skin border-none bg-transparent"
-                />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Profile Image Upload */}
+          <div className="flex flex-col items-center">
+            {previewImage ? (
+              <div className="relative">
+                <img src={previewImage} alt="Preview" className="w-24 h-24 rounded-full object-cover border-2 border-blue-500" />
                 <button
                   type="button"
-                  className="ml-2 text-skin hover:text-skinDark transition-colors"
-                  onClick={togglePasswordVisibility}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  onClick={removeImage}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                 >
-                  {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                  <FiX size={16} />
                 </button>
               </div>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="rounded bg-midGray border-gray-300 text-skin focus:ring-skin"
-                />
-                <span className="text-sm text-skin">Remember me</span>
-              </label>
-              
-              <Link to="/login" className="text-sm text-skin hover:underline">
-                Already have an account?
-              </Link>
-            </div>
-
-            {error && (
-              <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-                {error}
+            ) : (
+              <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer">
+                <label htmlFor="profileImg" className="cursor-pointer">
+                  <FiUpload size={24} className="text-gray-500" />
+                  <input
+                    id="profileImg"
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                </label>
               </div>
             )}
+          </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gray text-mindaro px-4 py-3 rounded-lg hover:bg-skinDark transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center font-medium"
-            >
-              {loading ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Creating Account...
-                </>
-              ) : (
-                'Sign Up'
-              )}
-            </button>
-          </form>
-        ) : (
-          <div className="text-center p-6 bg-green-50 rounded-lg">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold text-green-800 mb-2">Registration Successful!</h3>
-            <p className="text-green-700 mb-4">
-              We've sent an activation link to your email. Please check your inbox and click the link to activate your account.
-            </p>
-            <p className="text-sm text-green-600">
-              Didn't receive the email?{' '}
-              <button 
-                onClick={handleFormSubmit}
-                className="font-medium hover:underline focus:outline-none"
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+            <input
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+            <input
+              name="username"
+              value={formData.username}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              required
+              minLength={5}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 pr-10"
+                required
+                minLength={8}
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                onClick={() => setShowPassword(!showPassword)}
               >
-                Resend activation email
+                {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
               </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Password must be 8-30 characters with uppercase, lowercase, digits and no spaces
             </p>
-            <Link 
-              to="/login" 
-              className="inline-block mt-4 px-4 py-2 bg-skin text-gray rounded-lg hover:bg-skinDark transition-colors"
-            >
-              Go to Login
+          </div>
+
+          {error && (
+            <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-70 flex justify-center items-center"
+          >
+            {loading ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Creating Account...
+              </>
+            ) : "Sign Up"}
+          </button>
+
+          <div className="text-center text-sm text-gray-600">
+            Already have an account?{" "}
+            <Link to="/login" className="text-blue-600 hover:underline">
+              Login
             </Link>
           </div>
-        )}
+        </form>
       </div>
     </div>
   );

@@ -1,31 +1,58 @@
 import cloudinary from "../config/cloudinaryMain.js";
 import User from "../models/authSchema.js";
 import Post from "../models/postSchema.js";
-
+import Comment from "../models/commentSchema.js";
+import notificationModal from "../models/Notification.js";
+import mongoose from "mongoose";
 
 export const createPost = async (req, res) => {
   try {
     const { caption, settings, userId } = req.body;
 
-    if (!userId) {
-      return res.status(400).json({ message: "User ID is required" });
+    // Enhanced validation
+    if (!userId || userId === "undefined") {
+      return res.status(400).json({ 
+        success: false,
+        message: "Valid user ID is required" 
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid user ID format" 
+      });
     }
 
     if (!req.files || req.files.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "At least one image is required" });
+      return res.status(400).json({ 
+        success: false,
+        message: "At least one image is required" 
+      });
     }
 
-    const imageUploads = req.files.map((file) =>
-      cloudinary.uploader.upload(file.path)
-    );
+    // Check if user exists
+    const user = await User.findById(userId).select("username profileImg");
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
 
-    const uploadedImages = await Promise.all(imageUploads);
-    const imageUrls = uploadedImages.map((img) => img.secure_url);
+    // Upload images
+    const uploadPromises = req.files.map(file => {
+      const b64 = Buffer.from(file.buffer).toString("base64");
+      const dataURI = `data:${file.mimetype};base64,${b64}`;
+      return cloudinary.uploader.upload(dataURI);
+    });
 
+    const uploadResults = await Promise.all(uploadPromises);
+    const imageUrls = uploadResults.map(img => img.secure_url);
+
+    // Create post
     const newPost = new Post({
-      user: userId,
+      user: userId, // This should now be a valid ObjectId
       caption,
       images: imageUrls,
       settings: settings || {
@@ -36,23 +63,41 @@ export const createPost = async (req, res) => {
 
     const savedPost = await newPost.save();
 
-    await User.findByIdAndUpdate(userId, {
-      $push: { posts: savedPost._id },
+    const responseData = {
+      ...savedPost.toObject(),
+      user: {
+        _id: user._id,
+        username: user.username,
+        profileImg: user.profileImg
+      }
+    };
+
+    res.status(201).json({
+      success: true,
+      post: responseData
     });
 
-    res.status(201).json(savedPost);
   } catch (err) {
-    console.log("Error creating post:", err);
-    res.status(500).json({ message: "Failed to create post" });
+    console.error("Error creating post:", err);
+    res.status(500).json({ 
+      success: false,
+      message: err.message || "Internal server error" 
+    });
   }
 };
 
 export const getPosts = async (req, res) => {
   try {
     const posts = await Post.find()
-      .populate("user", "username profilePicture")
-      .populate("likes", "username profilePicture")
-      .populate("comments")
+      .populate("user", "username profileImg")
+      .populate("likes", "username email")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "user",
+          select: "username profileImg",
+        },
+      })
       .sort({ createdAt: -1 });
 
     res.status(200).json(posts);
@@ -146,26 +191,50 @@ export const deletePost = async (req, res) => {
 
 export const toggleLike = async (req, res) => {
   try {
-    const postId = req.params.id;
+    const { postId } = req.params;
     const { userId } = req.body;
 
-    const post = await Post.findById(postId);
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const post = await Post.findById(postId).populate("user");
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    const likeIndex = post.likes.indexOf(userId);
-    if (likeIndex === -1) {
-      post.likes.push(userId);
+    const isLiked = post.likes.some((id) => id.toString() === userId);
+
+    if (isLiked) {
+      // Unlike the post
+      post.likes = post.likes.filter((id) => id.toString() !== userId);
     } else {
-      post.likes.splice(likeIndex, 1);
+      // Like the post
+      post.likes.push(userId);
+
+      // Create notification if not liking own post
+      if (post.user._id.toString() !== userId) {
+        await notificationModal.create({
+          recipient: post.user._id,
+          sender: userId,
+          post: postId,
+          type: "like",
+        });
+      }
     }
 
-    await post.save();
-    res.status(200).json(post);
+    const updatedPost = await post.save();
+
+    // Populate the likes before sending response
+    const populatedPost = await Post.findById(updatedPost._id).populate(
+      "likes",
+      "username profileImg"
+    );
+
+    res.status(200).json(populatedPost);
   } catch (err) {
     console.error("Error toggling like:", err);
-    res.status(500).json({ message: "Failed to toggle like" });
+    res.status(500).json({ message: "Error toggling like" });
   }
 };
 
@@ -179,7 +248,15 @@ export const getPostsByUserId = async (req, res) => {
 
     const posts = await Post.find({ user: userId })
       .sort({ createdAt: -1 })
-      .populate("user", "username profileImg");
+      .populate("user", "username profileImg")
+      .populate("likes", "username profileImg")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "user",
+          select: "username profileImg",
+        },
+      });
 
     res.json(posts);
   } catch (err) {
@@ -187,6 +264,7 @@ export const getPostsByUserId = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch user posts" });
   }
 };
+
 export const getPublicUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.params.userId).select(
@@ -209,10 +287,11 @@ export const handleSavePost = async (req, res) => {
     const { postId, action } = req.body;
 
     if (!userId || !postId) {
-      return res.status(400).json({ message: "User ID and Post ID are required" });
+      return res
+        .status(400)
+        .json({ message: "User ID and Post ID are required" });
     }
 
-    // Changed from findByIdAndUpdate to findById
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -224,29 +303,135 @@ export const handleSavePost = async (req, res) => {
     }
 
     let update;
-    if (action === 'add') {
+    if (action === "add") {
       if (!user.savedPosts.includes(postId)) {
-        update = { $addToSet: { savedPosts: postId } }; // $addToSet prevents duplicates
+        update = { $addToSet: { savedPosts: postId } };
       }
-    } else if (action === 'remove') {
+    } else if (action === "remove") {
       update = { $pull: { savedPosts: postId } };
     }
 
     if (update) {
-      const updatedUser = await User.findByIdAndUpdate(
-        userId,
-        update,
-        { new: true } // Return the updated document
-      );
-      
+      const updatedUser = await User.findByIdAndUpdate(userId, update, {
+        new: true,
+      });
+
       return res.status(200).json({ success: true, user: updatedUser });
     }
 
-    // If no update was needed (e.g., trying to add an already saved post)
     return res.status(200).json({ success: true, user });
-
   } catch (err) {
     console.error("Save post error:", err);
     res.status(500).json({ message: "Failed to save post" });
+  }
+};
+
+export const addComment = async (req, res) => {
+  try {
+    const { content, userId } = req.body;  // Changed from 'text' to 'content'
+    const { postId } = req.params;
+
+    // Enhanced validation
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Valid user ID is required"
+      });
+    }
+
+    if (!content || typeof content !== 'string' || content.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid comment content is required"
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid post ID format"
+      });
+    }
+
+    // Check if post exists
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found"
+      });
+    }
+
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // Create and save comment
+    const comment = new Comment({
+      post: postId,  // Changed from postId to post for consistency
+      user: userId,
+      content: content.trim()
+    });
+
+    const savedComment = await comment.save();
+
+    // Add comment to post
+    post.comments.push(savedComment._id);
+    await post.save();
+
+    // Populate comment with user data before sending response
+    const populatedComment = await Comment.populate(savedComment, {
+      path: 'user',
+      select: 'username profileImg'
+    });
+
+    // Create notification if not commenting on own post
+    if (post.user.toString() !== userId) {
+      await notificationModal.create({
+        recipient: post.user,
+        sender: userId,
+        post: postId,
+        type: "comment",
+        content: content.substring(0, 30)  // Store first 30 chars as preview
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      comment: populatedComment
+    });
+
+  } catch (err) {
+    console.error("Error adding comment:", {
+      message: err.message,
+      stack: err.stack,
+      body: req.body,
+      params: req.params
+    });
+
+    res.status(500).json({
+      success: false,
+      message: "Internal server error while adding comment",
+    });
+  }
+};
+
+export const getComments = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    const comments = await Comment.find({ postId })
+      .populate("user", "username profileImg")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(comments);
+  } catch (err) {
+    console.error("Error fetching comments:", err);
+    res.status(500).json({ message: "Error fetching comments" });
   }
 };

@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Apis from "../../config/apis";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 const SearchList = ({ searchTerm, onClose }) => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { id } = useParams();
   const navigate = useNavigate();
+
+  const getCurrentUser = () => {
+    const authData = JSON.parse(localStorage.getItem("auth"));
+    return authData?.user || null;
+  };
 
   useEffect(() => {
     const searchUsers = async () => {
@@ -37,14 +43,10 @@ const SearchList = ({ searchTerm, onClose }) => {
     return () => clearTimeout(debounceTimer);
   }, [searchTerm]);
 
-  const handleClick = (userId, e) => {
-    e.preventDefault();
-    navigate(`/profile/${userId}`);
-    if (onClose) onClose();
-  };
+  
 
   return (
-    <div className=" absolute left-0 top-20 mx-3 w-[calc(100vw-24px)] z-10 lg:top-23 lg:w-103 bg-white rounded-lg shadow-lg border border-gray-200 max-h-80 overflow-y-auto">
+    <div className="absolute left-0 top-20 mx-3 w-[calc(100vw-24px)] z-10 lg:top-23 lg:w-103 bg-white rounded-lg shadow-lg border border-gray-200 max-h-80 overflow-y-auto">
       {loading ? (
         <div className="p-4 flex justify-center items-center">
           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-mindaro"></div>
@@ -59,9 +61,12 @@ const SearchList = ({ searchTerm, onClose }) => {
               className="hover:bg-gray-50 transition-colors duration-150"
             >
               <Link
-                to={`/profile/${user._id}`}
-                className=" p-3 flex items-center"
-                onClick={(e) => handleClick(user._id, e)}
+                to={
+                  getCurrentUser()?.id === user._id
+                    ? "/profile"
+                    : `/profile/${user._id}`
+                }
+                className="p-3 flex items-center"
               >
                 <img
                   src={user.profileImg || "/default-profile.png"}

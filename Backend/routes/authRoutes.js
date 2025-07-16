@@ -31,11 +31,9 @@ const upload = multer({
 authRouter
   .post("/signup", auth.signup)
   .post("/login", auth.login)
-  .post("/pre-signup", auth.preSignup)
-  .post("/logout", auth.Logout);
 
 authRouter
-  .put("/", protect, upload.single('profileImg') , user.UpdateUserProfile)
+  .put("/update-profile", protect, upload.single('profileImg') , user.UpdateUserProfile)
   .get("/me", protect, user.getMyProfile)
   .get("/search", user.searchUser) 
   .get("/:id", user.getUserProfileById) 

@@ -45,59 +45,42 @@ const PostForm = ({ closePostForm, onPostCreated }) => {
 
   const handleSubmitPost = async (e) => {
     e.preventDefault();
-
-    if (!postText.trim() && images.length === 0) {
-      setError("Please add some content to your post");
-      return;
-    }
-
-    if (!auth?.user?._id) {
-      setError("User information is missing");
-      return;
-    }
-
     setIsLoading(true);
     setError("");
-
+    const authdata = JSON.parse(localStorage.getItem("auth"));
+    const userId = authdata?.user?.id;
     try {
+  
       const formData = new FormData();
-      formData.append("userId", auth.user._id);
-      formData.append("caption", postText.trim());
-
-      images.forEach((item) => {
-        formData.append("images", item.file);
+      formData.append("caption", postText);
+      formData.append("userId", userId); // Ensure this is a valid ID
+      
+      // Append each file
+      images.forEach((image) => {
+        formData.append("images", image.file);
       });
-
-      formData.append("settings[hideLikeCount]", "false");
-      formData.append("settings[disableComments]", "false");
-
-      const response = await axios.post(
-        "http://localhost:8100/api/v1/posts/upload",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      const updatedAuth = {
-        ...auth,
-        user: {
-          ...auth.user,
-          posts: [...auth.user.posts, response.data._id],
+  
+      // Make sure your endpoint matches your route
+      const response = await axios.post(`${Apis.base}/posts`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
         },
-      };
-
-      localStorage.setItem("auth", JSON.stringify(updatedAuth));
-      setAuth(updatedAuth);
-
-      images.forEach((item) => URL.revokeObjectURL(item.url));
-      if (onPostCreated) onPostCreated(response.data);
-      closePostForm();
-    } catch (error) {
-      console.error("Post creation error:", error);
-      setError(error.response?.data?.message || "Failed to create post");
+      });
+  
+      if (response.data.success) {
+        toast.success("Post created successfully!");
+        setPostText("");
+        setImages([]);
+        if (onPostCreated) onPostCreated(response.data.post);
+        closePostForm();
+      } else {
+        throw new Error(response.data.message || "Failed to create post");
+      }
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || 
+                          err.message || 
+                          "Failed to create post";
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

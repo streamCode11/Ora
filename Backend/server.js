@@ -7,9 +7,9 @@ import cors from "cors";
 import path from 'path';
 import { fileURLToPath } from 'url';
 import authRouter from "./routes/authRoutes.js";
-import commentRoutes from './routes/commentRoutes.js';
 import postRouter from "./routes/postRoutes.js";
-
+import notificationRouter from "./routes/notificationRoutes.js";
+import bodyParser from "body-parser"
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -23,19 +23,15 @@ if (!fs.existsSync(uploadsDir)) {
 
 app.use('/uploads', express.static(uploadsDir));
 
-const corsOptions = {
-  origin: 'http://localhost:5173', // Your frontend origin
-  credentials: true, // Allow credentials
-  optionsSuccessStatus: 200 // For legacy browser support
-};
 
 app.use(cors());
-app.use(cookieParser());
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 app.use(express.json());
-app.use(`${pre}/comments`, commentRoutes);
 app.use(`${pre}/posts`, postRouter);
 app.use(`${pre}/auth`, authRouter);
+app.use(`${pre}/notifications`, notificationRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

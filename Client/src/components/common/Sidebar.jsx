@@ -46,12 +46,6 @@ const Sidebar = () => {
       icon: <FiCompass className="text-xl" />,
     },
     {
-      id: 2,
-      name: "Messages",
-      to: "/chat",
-      icon: <RiMessengerLine className="text-xl" />,
-    },
-    {
       id: 3,
       name: "Saved",
       to: "/saved",
